@@ -1,5 +1,4 @@
-# SoYeonDiscord
-Bot for Discord
+#Bot for Discord
 ============
 __*This is the discord bot that can get stats of user in osu!mania!*__
 
