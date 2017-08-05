@@ -19,4 +19,4 @@ CMD [ "node", "app.js" ]
 #$ docker build -t plzpeacez/node-discord .
 
 #$ docker run -p 49160:8080 -d <your username>/node-web-app
-#$ docker run --name node -dit plzpeacez/node-discord
+#$ docker run --name node --restart unless-stopped -dit plzpeacez/node-discord
