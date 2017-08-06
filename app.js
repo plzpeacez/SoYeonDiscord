@@ -14,6 +14,12 @@ const config = require("./config.json");
 // Load Osu Api
 const osu = require("osu")(config.osuapi); // replace xxxxxxxx with your API key 
 
+// variables in use
+var beatmaps = null;
+var refreshIntervalId;
+var beatmapObj = null;
+// const embed1;
+
 client.on("ready", () => {
     // This event will run if the bot starts, and logs in, successfully.
     console.log(`Bot has started, with ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`);
@@ -152,8 +158,8 @@ client.on("message", async message => {
         }).then(function (result) {
             // console.log(result[0]);
             // message.channel.send(JSON.stringify(result[0].username));
-            if(!result[0]){
-                message.channel.send("Doesn't matched");
+            if (!result[0]) {
+                message.channel.send("Doesn't matched.");
                 return;
             }
             const embed = new Discord.RichEmbed()
@@ -164,7 +170,7 @@ client.on("message", async message => {
                  */
                 .setColor(0x00AE86)
                 .setDescription("Ranked Score: " + JSON.stringify(result[0].ranked_score).replace(/\"/g, ""))
-                .addField("Hit Accuracy: ", JSON.stringify(result[0].accuracy+"%").replace(/\"/g, ""), true)
+                .addField("Hit Accuracy: ", JSON.stringify(result[0].accuracy + "%").replace(/\"/g, ""), true)
                 // .setDescription("Hit Accuracy: " + JSON.stringify(result[0].accuracy))
                 // .setDescription("Play Count: " + JSON.stringify(result[0].playcount))
                 .addField("Play Count: ", JSON.stringify(result[0].playcount).replace(/\"/g, ""), true)
@@ -177,7 +183,109 @@ client.on("message", async message => {
                 .setThumbnail("http://s.ppy.sh/a/" + JSON.stringify(result[0].user_id).replace(/\"/g, ""))
                 .setTimestamp()
 
-            message.channel.send({embed});
+            message.channel.send({ embed });
+        });
+        // message.channel.send(sayMessage);
+    }
+
+    if (command === "best") {
+        // makes the bot say something and delete the message. As an example, it's open to anyone to use. 
+        // To get the "message" itself we join the `args` back into a string with spaces: 
+        const uRecent = args.join(" ");
+        // Then we delete the command message (sneaky, right?). The catch just ignores the error with a cute smiley thing.
+        // message.delete().catch(O_o => { });
+        // And we get the bot to say the thing: 
+        osu.get_user_best({
+            "u": uRecent,
+            "m": 3,
+            "limit": 1
+        }).then(function (result) {
+            if (!result[0]) {
+                message.channel.send("Doesn't matched.");
+                return;
+            }
+            // console.log(result);
+            beatmaps = JSON.stringify(result[0]);
+            // console.log(beatmaps);
+            refreshIntervalId = setInterval(function () {
+                // getBm(result[0].beatmap_id);
+                // message.channel.send(getBm(result[0].beatmap_id));
+                osu.get_beatmaps({
+                    "b": result[0].beatmap_id,
+                    "m": 3,
+                    "limit": 1
+                }).then(function (result1) {
+                    // console.log(result1);
+                    clearInterval(refreshIntervalId);
+                    // beatmapObj = result[0];
+                    const embed = new Discord.RichEmbed()
+                        .setTitle(JSON.stringify(result1[0].artist).replace(/\"/g, "") + " - " + JSON.stringify(result1[0].title).replace(/\"/g, ""))
+                        .setColor(0x00FE16)
+                        .setDescription("tags: " + JSON.stringify(result1[0].tags).replace(/\"/g, ""))
+                        .addField("Total Score: ", JSON.stringify(result[0].score).replace(/\"/g, ""), true)
+                        .addField("Max Combo: ", JSON.stringify(result[0].maxcombo).replace(/\"/g, ""), true)
+                        .setTimestamp()
+                        .setImage("https://b.ppy.sh/thumb/" + JSON.stringify(result1[0].beatmapset_id).replace(/\"/g, "") + "l.jpg")
+                        .setThumbnail("https://s.ppy.sh/images/" + JSON.stringify(result[0].rank).replace(/\"/g, "") + ".png")
+                    // .setImage("https://b.ppy.sh/thumb/"+JSON.stringify(result1[0].beatmapset_id)+".jpg")
+                    // return embed1;
+                    message.channel.send({ embed });
+                    // beatmaps = null;
+                });
+            }, 2000);
+
+            // message.channel.send({ embed1 });
+        });
+        // message.channel.send(sayMessage);
+    }
+
+    if (command === "recent") {
+        // makes the bot say something and delete the message. As an example, it's open to anyone to use. 
+        // To get the "message" itself we join the `args` back into a string with spaces: 
+        const uRecent = args.join(" ");
+        // Then we delete the command message (sneaky, right?). The catch just ignores the error with a cute smiley thing.
+        // message.delete().catch(O_o => { });
+        // And we get the bot to say the thing: 
+        osu.get_user_recent({
+            "u": uRecent,
+            "m": 3,
+            "limit": 1
+        }).then(function (result) {
+            if (!result[0]) {
+                message.channel.send("Doesn't played in last 24 hr.");
+                return;
+            }
+            // console.log(result);
+            beatmaps = JSON.stringify(result[0]);
+            // console.log(beatmaps);
+            refreshIntervalId = setInterval(function () {
+                // getBm(result[0].beatmap_id);
+                // message.channel.send(getBm(result[0].beatmap_id));
+                osu.get_beatmaps({
+                    "b": result[0].beatmap_id,
+                    "m": 3,
+                    "limit": 1
+                }).then(function (result1) {
+                    // console.log(result1);
+                    clearInterval(refreshIntervalId);
+                    // beatmapObj = result[0];
+                    const embed = new Discord.RichEmbed()
+                        .setTitle(JSON.stringify(result1[0].artist).replace(/\"/g, "") + " - " + JSON.stringify(result1[0].title).replace(/\"/g, ""))
+                        .setColor(0x00FE16)
+                        .setDescription("tags: " + JSON.stringify(result1[0].tags).replace(/\"/g, ""))
+                        .addField("Total Score: ", JSON.stringify(result[0].score).replace(/\"/g, ""), true)
+                        .addField("Max Combo: ", JSON.stringify(result[0].maxcombo).replace(/\"/g, ""), true)
+                        .setTimestamp()
+                        .setImage("https://b.ppy.sh/thumb/" + JSON.stringify(result1[0].beatmapset_id).replace(/\"/g, "") + "l.jpg")
+                        .setThumbnail("https://s.ppy.sh/images/" + JSON.stringify(result[0].rank).replace(/\"/g, "") + ".png")
+                    // .setImage("https://b.ppy.sh/thumb/"+JSON.stringify(result1[0].beatmapset_id)+".jpg")
+                    // return embed1;
+                    message.channel.send({ embed });
+                    // beatmaps = null;
+                });
+            }, 2000);
+
+            // message.channel.send({ embed1 });
         });
         // message.channel.send(sayMessage);
     }
@@ -208,3 +316,25 @@ client.on('message', message => {
 });
 
 client.login(config.token);
+
+// function getBm(bm) {
+//     osu.get_beatmaps({
+//         "b": bm,
+//         "m": 3,
+//         "limit": 1
+//     }).then(function (result) {
+//         console.log(result);
+//         clearInterval(refreshIntervalId);
+//         beatmapObj = result[0];
+//         const embed1 = new Discord.RichEmbed()
+//             .setTitle(JSON.stringify(result[0].artist).replace(/\"/g, "") + " - " + JSON.stringify(result[0].title).replace(/\"/g, ""))
+//             .setColor(0x00AE86)
+//             .setDescription("tags: " + JSON.stringify(result[0].tags).replace(/\"/g, ""))
+//             .addField("Total Score: ", beatmaps.score.replace(/\"/g, ""), true)
+//             .addField("Max Combo: ", beatmaps.maxcombo.replace(/\"/g, ""), true)
+//             .setTimestamp()
+//             .setThumbnail("https://b.ppy.sh/thumb/" + JSON.stringify(result[0].beatmapset_id).replace(/\"/g, "") + "l.png")
+//         return embed1;
+//     });
+
+// }
