@@ -339,7 +339,7 @@ client.on('message', message => {
 
     if (message.content === '555' || /555/.test(message.content)) {
         // Send "pong" to the same channel
-        message.channel.send('555+');
+        message.channel.send('โอ้ยขำ 555+');
         // message.channel.send('บอกว่า ++');
     }
 });
