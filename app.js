@@ -15,7 +15,7 @@ const config = require("./config.json");
 const osu = require("osu")(config.osuapi); // replace xxxxxxxx with your API key 
 
 // variables in use
-var beatmaps = null;
+// var beatmaps = null;
 var refreshIntervalId;
 var beatmapObj = null;
 // const embed1;
@@ -148,13 +148,19 @@ client.on("message", async message => {
     if (command === "stat") {
         // makes the bot say something and delete the message. As an example, it's open to anyone to use. 
         // To get the "message" itself we join the `args` back into a string with spaces: 
-        const uStat = args.join(" ");
+        const uStat = args[0];
+        const mode = args[1];
+        const uMode = await getMode(mode);
+        if (!args[1]) {
+            message.channel.send("ระบุโหมดด้วยจ้า~ \nosu | taiko | ctb | mania \nตัวอย่าง +stat cookiezi osu");
+            return;
+        }
         // Then we delete the command message (sneaky, right?). The catch just ignores the error with a cute smiley thing.
         // message.delete().catch(O_o => { });
         // And we get the bot to say the thing: 
-        osu.get_user({
+        await osu.get_user({
             "u": uStat,
-            "m": 3
+            "m": uMode
         }).then(function (result) {
             // console.log(result[0]);
             // message.channel.send(JSON.stringify(result[0].username));
@@ -163,25 +169,27 @@ client.on("message", async message => {
                 return;
             }
             const embed = new Discord.RichEmbed()
-                .setTitle("Level: " + JSON.stringify(result[0].level).replace(/\"/g, "") + " #" + JSON.stringify(result[0].pp_country_rank).replace(/\"/g, "") + " of " + JSON.stringify(result[0].country).replace(/\"/g, ""))
-                .setAuthor("Stats for " + JSON.stringify(result[0].username).replace(/\"/g, ""))
+                .setTitle("Player: " + JSON.stringify(result[0].username).replace(/\"/g, "") + " Level: " + Math.floor(Number(result[0].level)) + " #" + JSON.stringify(result[0].pp_country_rank).replace(/\"/g, "") + " of " + JSON.stringify(result[0].country).replace(/\"/g, ""))
+                .setAuthor("Stats for " + JSON.stringify(result[0].username).replace(/\"/g, "") + " #" + Number(result[0].pp_rank).toLocaleString())
                 /*
                  * Alternatively, use "#00AE86", [0, 174, 134] or an integer number.
                  */
                 .setColor(0x00AE86)
-                .setDescription("Ranked Score: " + JSON.stringify(result[0].ranked_score).replace(/\"/g, ""))
-                .addField("Hit Accuracy: ", JSON.stringify(result[0].accuracy + "%").replace(/\"/g, ""), true)
+                .setDescription("Ranked Score: " + Number(result[0].ranked_score).toLocaleString())
+                .addField("Hit Accuracy: ", Number(result[0].accuracy).toFixed(2) + "%", true)
                 // .setDescription("Hit Accuracy: " + JSON.stringify(result[0].accuracy))
                 // .setDescription("Play Count: " + JSON.stringify(result[0].playcount))
-                .addField("Play Count: ", JSON.stringify(result[0].playcount).replace(/\"/g, ""), true)
+                .addField("Play Count: ", Number(result[0].playcount).toLocaleString(), true)
                 // .setDescription("Total Score: " + JSON.stringify(result[0].total_score))
-                .addField("Total Score: ", JSON.stringify(result[0].total_score).replace(/\"/g, ""), true)
+                .addField("Total Score: ", Number(result[0].total_score).toLocaleString(), true)
                 // .setDescription("SS: " + JSON.stringify(result[0].count_rank_ss) + " S: " + JSON.stringify(result[0].count_rank_s) + " A: " + JSON.stringify(result[0].count_rank_a))
                 .addField("Total Rank achives ", "SS: " + JSON.stringify(result[0].count_rank_ss).replace(/\"/g, "") + " S: " + JSON.stringify(result[0].count_rank_s).replace(/\"/g, "") + " A: " + JSON.stringify(result[0].count_rank_a).replace(/\"/g, ""), true)
+                .addField("Total Hit Count ", "300: " + Number(result[0].count300).toLocaleString() + " Hits \n100: " + Number(result[0].count100).toLocaleString() + " Hits \n50: " + Number(result[0].count50).toLocaleString() + " Hits", true)
                 // .setFooter("This is the footer text, it can hold 2048 characters")
                 // .setImage("http://i.imgur.com/yVpymuV.png")
                 .setThumbnail("http://s.ppy.sh/a/" + JSON.stringify(result[0].user_id).replace(/\"/g, ""))
                 .setTimestamp()
+                .setURL("https://osu.ppy.sh/u/" + JSON.stringify(result[0].user_id).replace(/\"/g, ""))
 
             message.channel.send({ embed });
         });
@@ -191,13 +199,19 @@ client.on("message", async message => {
     if (command === "best") {
         // makes the bot say something and delete the message. As an example, it's open to anyone to use. 
         // To get the "message" itself we join the `args` back into a string with spaces: 
-        const uRecent = args.join(" ");
+        const uRecent = args[0];
+        const mode = args[1];
+        const uMode = await getMode(mode);
+        if (!args[1]) {
+            message.channel.send("ระบุโหมดด้วยจ้า~ \nosu | taiko | ctb | mania \nตัวอย่าง +stat cookiezi osu");
+            return;
+        }
         // Then we delete the command message (sneaky, right?). The catch just ignores the error with a cute smiley thing.
         // message.delete().catch(O_o => { });
         // And we get the bot to say the thing: 
         osu.get_user_best({
             "u": uRecent,
-            "m": 3,
+            "m": uMode,
             "limit": 1
         }).then(function (result) {
             if (!result[0]) {
@@ -205,14 +219,14 @@ client.on("message", async message => {
                 return;
             }
             // console.log(result);
-            beatmaps = JSON.stringify(result[0]);
+            // beatmaps = JSON.stringify(result[0]);
             // console.log(beatmaps);
             refreshIntervalId = setInterval(function () {
                 // getBm(result[0].beatmap_id);
                 // message.channel.send(getBm(result[0].beatmap_id));
                 osu.get_beatmaps({
                     "b": result[0].beatmap_id,
-                    "m": 3,
+                    "m": uMode,
                     "limit": 1
                 }).then(function (result1) {
                     // console.log(result1);
@@ -222,8 +236,9 @@ client.on("message", async message => {
                         .setTitle(JSON.stringify(result1[0].artist).replace(/\"/g, "") + " - " + JSON.stringify(result1[0].title).replace(/\"/g, ""))
                         .setColor(0x00FE16)
                         .setDescription("tags: " + JSON.stringify(result1[0].tags).replace(/\"/g, ""))
-                        .addField("Total Score: ", JSON.stringify(result[0].score).replace(/\"/g, ""), true)
-                        .addField("Max Combo: ", JSON.stringify(result[0].maxcombo).replace(/\"/g, ""), true)
+                        .addField("Total Score: ", Number(result[0].score).toLocaleString(), true)
+                        .addField("Max Combo: ", Number(result[0].maxcombo).toLocaleString(), true)
+                        .addField("Statistics ", "Hit 300:  " + Number(result[0].count300).toLocaleString() + " \nHit 100:   " + Number(result[0].count100).toLocaleString() + " \nHit 50:     " + Number(result[0].count50).toLocaleString() + " \nMiss:       " + Number(result[0].countmiss).toLocaleString(), true)
                         .setTimestamp()
                         .setImage("https://b.ppy.sh/thumb/" + JSON.stringify(result1[0].beatmapset_id).replace(/\"/g, "") + "l.jpg")
                         .setThumbnail("https://s.ppy.sh/images/" + JSON.stringify(result[0].rank).replace(/\"/g, "") + ".png")
@@ -242,13 +257,19 @@ client.on("message", async message => {
     if (command === "recent") {
         // makes the bot say something and delete the message. As an example, it's open to anyone to use. 
         // To get the "message" itself we join the `args` back into a string with spaces: 
-        const uRecent = args.join(" ");
+        const uRecent = args[0];
+        const mode = args[1];
+        const uMode = await getMode(mode);
+        if (!args[1]) {
+            message.channel.send("ระบุโหมดด้วยจ้า~ \nosu | taiko | ctb | mania \nตัวอย่าง +stat cookiezi osu");
+            return;
+        }
         // Then we delete the command message (sneaky, right?). The catch just ignores the error with a cute smiley thing.
         // message.delete().catch(O_o => { });
         // And we get the bot to say the thing: 
         osu.get_user_recent({
             "u": uRecent,
-            "m": 3,
+            "m": uMode,
             "limit": 1
         }).then(function (result) {
             if (!result[0]) {
@@ -256,14 +277,14 @@ client.on("message", async message => {
                 return;
             }
             // console.log(result);
-            beatmaps = JSON.stringify(result[0]);
+            // beatmaps = JSON.stringify(result[0]);
             // console.log(beatmaps);
             refreshIntervalId = setInterval(function () {
                 // getBm(result[0].beatmap_id);
                 // message.channel.send(getBm(result[0].beatmap_id));
                 osu.get_beatmaps({
                     "b": result[0].beatmap_id,
-                    "m": 3,
+                    "m": uMode,
                     "limit": 1
                 }).then(function (result1) {
                     // console.log(result1);
@@ -273,8 +294,9 @@ client.on("message", async message => {
                         .setTitle(JSON.stringify(result1[0].artist).replace(/\"/g, "") + " - " + JSON.stringify(result1[0].title).replace(/\"/g, ""))
                         .setColor(0x00FE16)
                         .setDescription("tags: " + JSON.stringify(result1[0].tags).replace(/\"/g, ""))
-                        .addField("Total Score: ", JSON.stringify(result[0].score).replace(/\"/g, ""), true)
-                        .addField("Max Combo: ", JSON.stringify(result[0].maxcombo).replace(/\"/g, ""), true)
+                        .addField("Total Score: ", Number(result[0].score).toLocaleString(), true)
+                        .addField("Max Combo: ", Number(result[0].maxcombo).toLocaleString(), true)
+                        .addField("Statistics ", "Hit 300:  " + Number(result[0].count300).toLocaleString() + " \nHit 100:   " + Number(result[0].count100).toLocaleString() + " \nHit 50:     " + Number(result[0].count50).toLocaleString() + " \nMiss:       " + Number(result[0].countmiss).toLocaleString(), true)
                         .setTimestamp()
                         .setImage("https://b.ppy.sh/thumb/" + JSON.stringify(result1[0].beatmapset_id).replace(/\"/g, "") + "l.jpg")
                         .setThumbnail("https://s.ppy.sh/images/" + JSON.stringify(result[0].rank).replace(/\"/g, "") + ".png")
@@ -317,24 +339,56 @@ client.on('message', message => {
 
 client.login(config.token);
 
-// function getBm(bm) {
-//     osu.get_beatmaps({
-//         "b": bm,
-//         "m": 3,
-//         "limit": 1
-//     }).then(function (result) {
-//         console.log(result);
-//         clearInterval(refreshIntervalId);
-//         beatmapObj = result[0];
-//         const embed1 = new Discord.RichEmbed()
-//             .setTitle(JSON.stringify(result[0].artist).replace(/\"/g, "") + " - " + JSON.stringify(result[0].title).replace(/\"/g, ""))
-//             .setColor(0x00AE86)
-//             .setDescription("tags: " + JSON.stringify(result[0].tags).replace(/\"/g, ""))
-//             .addField("Total Score: ", beatmaps.score.replace(/\"/g, ""), true)
-//             .addField("Max Combo: ", beatmaps.maxcombo.replace(/\"/g, ""), true)
-//             .setTimestamp()
-//             .setThumbnail("https://b.ppy.sh/thumb/" + JSON.stringify(result[0].beatmapset_id).replace(/\"/g, "") + "l.png")
-//         return embed1;
-//     });
+client.on("message", async message => {
+    const args = message.content.slice(config.keyword.length).trim().split(/ +/g);
+    const command = args.shift().toLowerCase();
+    if (message.channel.type === "dm") {
+        message.author.send("ต้องขอโทษด้วยครับเนื่องจากบอท ไม่สามารถตอบคำถามอะไรได้มากในตอนนี้ \nหากมีคำถามหรือข้อสงสัย Add มาที่discord SoYeon#8163 ได้เลยครับ \nขออภัยในความไม่สะดวก");
+        // console.log(message.content);
+        if (command === "sig") {
+            const sigMessage = args.join(" ");
+            // message.author.send("Your message here." + message.content);
+            client.user.setGame(sigMessage);
+            message.author.send("Your message was setted.");
+        }
 
-// }
+        if (command === "status") {
+            const sigMessage = await args.join(" ");
+            if (sigMessage === "online") {
+                client.user.setStatus("online");
+                message.author.send("Your status was set to online.");
+            }
+            if (sigMessage === "idle") {
+                client.user.setStatus("idle");
+                message.author.send("Your status was set to idle.");
+            }
+            if (sigMessage === "invisible") {
+                client.user.setStatus("invisible");
+                message.author.send("Your status was set to invisible.");
+            }
+            if (sigMessage === "dnd") {
+                client.user.setStatus("dnd");
+                message.author.send("Your status was set to dnd.");
+            }
+            // message.author.send("Your message here." + message.content);
+        }
+    }
+});
+
+function getMode(mode) {
+    if (mode === "osu") {
+        return 0;
+    }
+    else if (mode === "taiko") {
+        return 1;
+    }
+    else if (mode === "ctb") {
+        return 2;
+    }
+    else if (mode === "mania") {
+        return 3;
+    }
+    else {
+        return 0;
+    }
+}
