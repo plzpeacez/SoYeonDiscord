@@ -329,10 +329,17 @@ client.on('guildMemberAdd', member => {
 
 // Create an event listener for messages
 client.on('message', message => {
+    if (message.author.bot) return;
     // If the message is "ping"
     if (message.content === '++') {
         // Send "pong" to the same channel
         message.channel.send(message.author.username + ' บอกว่า ++');
+        // message.channel.send('บอกว่า ++');
+    }
+
+    if (message.content === '555' || /555/.test(message.content)) {
+        // Send "pong" to the same channel
+        message.channel.send('555+');
         // message.channel.send('บอกว่า ++');
     }
 });
