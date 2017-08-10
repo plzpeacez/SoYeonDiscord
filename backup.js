@@ -7,7 +7,7 @@ const Discord = require("discord.js");
 const client = new Discord.Client();
 
 // Here we load the config.json file that contains our token and our prefix values. 
-const config = require("./SoYeon.json");
+const config = require("./config.json");
 // config.token contains the bot's token
 // config.prefix contains the message prefix.
 
@@ -26,21 +26,21 @@ client.on("ready", () => {
     // Example of changing the bot's playing game to something useful. `client.user` is what the
     // docs refer to as the "ClientUser".
     //   client.user.setGame(`on ${client.guilds.size} servers`);
-    // client.user.setGame('->Command is the one that betrayed you!', "rchelincle.me");
+    client.user.setGame('->Command is the one that betrayed you!');
 });
 
 client.on("guildCreate", guild => {
     // This event triggers when the bot joins a guild.
     console.log(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`);
     //   client.user.setGame(`on ${client.guilds.size} servers`);
-    // client.user.setGame('->Command is the one that betrayed you!',  "rchelincle.me");
+    client.user.setGame('->Command is the one that betrayed you!');
 });
 
 client.on("guildDelete", guild => {
     // this event triggers when the bot is removed from a guild.
     console.log(`I have been removed from: ${guild.name} (id: ${guild.id})`);
     //   client.user.setGame(`on ${client.guilds.size} servers`);
-    // client.user.setGame('->Command is the one that betrayed you!', "rchelincle.me");
+    client.user.setGame('->Command is the one that betrayed you!');
 });
 
 
@@ -314,35 +314,35 @@ client.on("message", async message => {
 });
 
 // Create an event listener for new guild members
-// client.on('guildMemberAdd', member => {
-//     // Send the message to the guilds default channel (usually #general), mentioning the member
-//     member.guild.defaultChannel.send(`Welcome to the server, ${member}!`);
+client.on('guildMemberAdd', member => {
+    // Send the message to the guilds default channel (usually #general), mentioning the member
+    member.guild.defaultChannel.send(`Welcome to the server, ${member}!`);
 
-//     // If you want to send the message to a designated channel on a server instead
-//     // you can do the following:
-//     const channel = member.guild.channels.find('name', 'member-log');
-//     // Do nothing if the channel wasn't found on this server
-//     if (!channel) return;
-//     // Send the message, mentioning the member
-//     channel.send(`Welcome to the server, ${member}`);
-// });
+    // If you want to send the message to a designated channel on a server instead
+    // you can do the following:
+    const channel = member.guild.channels.find('name', 'member-log');
+    // Do nothing if the channel wasn't found on this server
+    if (!channel) return;
+    // Send the message, mentioning the member
+    channel.send(`Welcome to the server, ${member}`);
+});
 
 // Create an event listener for messages
-// client.on('message', message => {
-//     if (message.author.bot) return;
-//     // If the message is "ping"
-//     if (message.content === '++') {
-//         // Send "pong" to the same channel
-//         message.channel.send(message.author.username + ' บอกว่า ++');
-//         // message.channel.send('บอกว่า ++');
-//     }
+client.on('message', message => {
+    if (message.author.bot) return;
+    // If the message is "ping"
+    if (message.content === '++') {
+        // Send "pong" to the same channel
+        message.channel.send(message.author.username + ' บอกว่า ++');
+        // message.channel.send('บอกว่า ++');
+    }
 
-//     if (message.content === '555' || /555/.test(message.content)) {
-//         // Send "pong" to the same channel
-//         message.channel.send('โอ้ยขำ 555+');
-//         // message.channel.send('บอกว่า ++');
-//     }
-// });
+    if (message.content === '555' || /555/.test(message.content)) {
+        // Send "pong" to the same channel
+        message.channel.send('โอ้ยขำ 555+');
+        // message.channel.send('บอกว่า ++');
+    }
+});
 
 client.login(config.token);
 
@@ -350,7 +350,7 @@ client.on("message", async message => {
     const args = message.content.slice(config.keyword.length).trim().split(/ +/g);
     const command = args.shift().toLowerCase();
     if (message.channel.type === "dm") {
-        // message.author.send("ต้องขอโทษด้วยครับเนื่องจากบอท ไม่สามารถตอบคำถามอะไรได้มากในตอนนี้ \nหากมีคำถามหรือข้อสงสัย Add มาที่discord SoYeon#8163 ได้เลยครับ \nขออภัยในความไม่สะดวก");
+        message.author.send("ต้องขอโทษด้วยครับเนื่องจากบอท ไม่สามารถตอบคำถามอะไรได้มากในตอนนี้ \nหากมีคำถามหรือข้อสงสัย Add มาที่discord SoYeon#8163 ได้เลยครับ \nขออภัยในความไม่สะดวก");
         // console.log(message.content);
         if (command === "sig") {
             const sigMessage = args.join(" ");
