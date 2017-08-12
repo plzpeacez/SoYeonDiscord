@@ -6,3 +6,5 @@ bot.js
 node_modules/
 SoYeon.json
 soyeon.js
+appid.json
+phantasma.json

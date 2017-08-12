@@ -5,7 +5,8 @@ RUN git clone https://github.com/plzpeacez/SoYeonDiscord.git
 RUN cd SoYeonDiscord
 
 WORKDIR /SoYeonDiscord
-ADD ./config.json /SoYeonDiscord/
+ADD ./SoYeon.json /SoYeonDiscord/soyeon/
+ADD ./appid.json /SoYeonDiscord/wg/
 
 RUN npm install
 
@@ -13,10 +14,11 @@ RUN npm install
 # COPY . /usr/src/app
 
 # EXPOSE 3001
-CMD [ "node", "app.js" ]
+RUN cd soyeon
+CMD [ "node", "soyeon.js" ]
 
-#$ docker build -t <your username>/node-web-app .
-#$ docker build -t plzpeacez/node-discord .
+#$ docker build --no-cache -t <your username>/node-web-app .
+#$ docker build --no-cache -t plzpeacez/node-discord .
 
 #$ docker run -p 49160:8080 -d <your username>/node-web-app
 #$ docker run --name node --restart unless-stopped -dit plzpeacez/node-discord
