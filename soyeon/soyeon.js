@@ -393,7 +393,7 @@ client.on("message", async message => {
     const args = message.content.slice(config.keyword.length).trim().split(/ +/g);
     const command = args.shift().toLowerCase();
     if (message.channel.type === "dm") {
-        message.author.send("ต้องขอโทษด้วยครับเนื่องจากบอท ไม่สามารถตอบคำถามอะไรได้มากในตอนนี้ \nหากมีคำถามหรือข้อสงสัย Add มาที่discord SoYeon#8163 ได้เลยครับ \nขออภัยในความไม่สะดวก");
+        // message.author.send("ต้องขอโทษด้วยครับเนื่องจากบอท ไม่สามารถตอบคำถามอะไรได้มากในตอนนี้ \nหากมีคำถามหรือข้อสงสัย Add มาที่discord SoYeon#8163 ได้เลยครับ \nขออภัยในความไม่สะดวก");
         // console.log(message.content);
         if (command === "sig") {
             const sigMessage = args.join(" ");
