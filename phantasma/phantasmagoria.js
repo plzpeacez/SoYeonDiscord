@@ -29,21 +29,21 @@ client.on("ready", () => {
     // Example of changing the bot's playing game to something useful. `client.user` is what the
     // docs refer to as the "ClientUser".
     //   client.user.setGame(`on ${client.guilds.size} servers`);
-    client.user.setGame('->Command is the one that betrayed you!');
+    client.user.setGame('->Command is the one that betrayed you!', 'https://www.twitch.tv/osulive');
 });
 
 client.on("guildCreate", guild => {
     // This event triggers when the bot joins a guild.
     console.log(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`);
     //   client.user.setGame(`on ${client.guilds.size} servers`);
-    client.user.setGame('->Command is the one that betrayed you!');
+    client.user.setGame('->Command is the one that betrayed you!', 'https://www.twitch.tv/osulive');
 });
 
 client.on("guildDelete", guild => {
     // this event triggers when the bot is removed from a guild.
     console.log(`I have been removed from: ${guild.name} (id: ${guild.id})`);
     //   client.user.setGame(`on ${client.guilds.size} servers`);
-    client.user.setGame('->Command is the one that betrayed you!');
+    client.user.setGame('->Command is the one that betrayed you!', 'https://www.twitch.tv/osulive');
 });
 
 
