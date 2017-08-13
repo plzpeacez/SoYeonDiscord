@@ -38,24 +38,8 @@ var wargaming = function (api_key) {
 		return self.api_call("/wows/encyclopedia/ships/", options);
 	};
 
-	this.get_scores = function (options) {
-		return self.api_call("/get_scores", options);
-	};
-
-	this.get_user_best = function (options) {
-		return self.api_call("/get_user_best", options);
-	};
-
-	this.get_user_recent = function (options) {
-		return self.api_call("/get_user_recent", options);
-	};
-
-	this.get_match = function (options) {
-		return self.api_call("/get_match", options);
-	};
-
-	this.get_replay = function (options) {
-		return self.api_call("/get_replay", options);
+	this.getPlayer_stat = function (options) {
+		return self.api_call("/wows/ships/stats/", options);
 	};
 };
 

@@ -7,7 +7,7 @@ const Discord = require("discord.js");
 const client = new Discord.Client();
 
 // Here we load the config.json file that contains our token and our prefix values. 
-const config = require("./phantasma.json");
+const config = require("./config.json");
 // config.token contains the bot's token
 // config.prefix contains the message prefix.
 
@@ -29,21 +29,21 @@ client.on("ready", () => {
     // Example of changing the bot's playing game to something useful. `client.user` is what the
     // docs refer to as the "ClientUser".
     //   client.user.setGame(`on ${client.guilds.size} servers`);
-    client.user.setGame('+Command is the one that betrayed you!', 'https://www.twitch.tv/osulive');
+    client.user.setGame('+Command is the one that betrayed you!');
 });
 
 client.on("guildCreate", guild => {
     // This event triggers when the bot joins a guild.
     console.log(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`);
     //   client.user.setGame(`on ${client.guilds.size} servers`);
-    client.user.setGame('+Command is the one that betrayed you!', 'https://www.twitch.tv/osulive');
+    client.user.setGame('+Command is the one that betrayed you!');
 });
 
 client.on("guildDelete", guild => {
     // this event triggers when the bot is removed from a guild.
     console.log(`I have been removed from: ${guild.name} (id: ${guild.id})`);
     //   client.user.setGame(`on ${client.guilds.size} servers`);
-    client.user.setGame('+Command is the one that betrayed you!', 'https://www.twitch.tv/osulive');
+    client.user.setGame('+Command is the one that betrayed you!');
 });
 
 
@@ -398,11 +398,11 @@ client.on('message', message => {
         // message.channel.send('บอกว่า ++');
     }
 
-    if (message.content === '555' || /555/.test(message.content)) {
-        // Send "pong" to the same channel
-        message.channel.send('โอ้ยขำ 555+');
-        // message.channel.send('บอกว่า ++');
-    }
+    // if (message.content === '555' || /555/.test(message.content)) {
+    //     // Send "pong" to the same channel
+    //     message.channel.send('โอ้ยขำ 555+');
+    //     // message.channel.send('บอกว่า ++');
+    // }
 });
 
 client.login(config.token);
