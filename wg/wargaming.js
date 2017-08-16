@@ -41,6 +41,10 @@ var wargaming = function (api_key) {
 	this.getPlayer_stat = function (options) {
 		return self.api_call("/wows/ships/stats/", options);
 	};
+	
+	this.getship_top = function (options) {
+		return self.api_call("/wows/encyclopedia/shipprofile/", options);
+	};
 };
 
 module.exports = wargaming;

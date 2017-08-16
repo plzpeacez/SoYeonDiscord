@@ -17,6 +17,9 @@ const osu = require("../osu/osuapi");
 // Load WG API
 const wg = require("../wg/wgapi");
 
+// Load Ships embed
+const ship = require("./ship");
+
 // variables in use
 // var beatmaps = null;
 var refreshIntervalId;
@@ -29,21 +32,22 @@ client.on("ready", () => {
     // Example of changing the bot's playing game to something useful. `client.user` is what the
     // docs refer to as the "ClientUser".
     //   client.user.setGame(`on ${client.guilds.size} servers`);
-    client.user.setGame('+Command is the one that betrayed you!');
+    client.user.setGame(`SoYeon services on ${client.guilds.size} servers with ${client.users.size} members! thanks for trusted`);
+    // client.user.setGame('Command is the one that betrayed you!');
 });
 
 client.on("guildCreate", guild => {
     // This event triggers when the bot joins a guild.
     console.log(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`);
     //   client.user.setGame(`on ${client.guilds.size} servers`);
-    client.user.setGame('+Command is the one that betrayed you!');
+    client.user.setGame('Command is the one that betrayed you!');
 });
 
 client.on("guildDelete", guild => {
     // this event triggers when the bot is removed from a guild.
     console.log(`I have been removed from: ${guild.name} (id: ${guild.id})`);
     //   client.user.setGame(`on ${client.guilds.size} servers`);
-    client.user.setGame('+Command is the one that betrayed you!');
+    client.user.setGame('Command is the one that betrayed you!');
 });
 
 
@@ -276,6 +280,10 @@ client.on("message", async message => {
         // To get the "message" itself we join the `args` back into a string with spaces: 
         let type = args[0];
         let name = args.slice(1).join(' ');
+        let pic;
+        wg.getShipType(type).then((result) => {
+            pic = result;
+        })
 
         // Then we delete the command message (sneaky, right?). The catch just ignores the error with a cute smiley thing.
         // message.delete().catch(O_o => { });
@@ -305,6 +313,7 @@ client.on("message", async message => {
                 .addField("Max Speed: ", Number(obj.default_profile.mobility.max_speed).toLocaleString() + " knots", true)
                 .addField("Stats: ", stat + stat2 + stat3 + stat4, true)
                 .setTimestamp()
+                .setThumbnail("http://glossary-asia-static.gcdn.co/icons/wows/current/vehicle/types/" + JSON.stringify(pic).replace(/\"/g, "") + "/normal.png")
                 .setImage("http://glossary-asia-static.gcdn.co/icons/wows/current/vehicle/medium/" + JSON.stringify(obj.ship_id_str).replace(/\"/g, "") + ".png")
 
             message.channel.send({ embed });
@@ -314,7 +323,7 @@ client.on("message", async message => {
         })
     }
 
-    if (command === "userpvp") {
+    if (command === "xxxxxxuserpvp") {
         // makes the bot say something and delete the message. As an example, it's open to anyone to use. 
         // To get the "message" itself we join the `args` back into a string with spaces: 
         let username = args[0];
@@ -372,6 +381,33 @@ client.on("message", async message => {
             message.channel.send("ประเภทเรือหรือชื่อเรือ ไม่ตรงกับคำค้นหา ลองใหม่จ้า~ \nตัวอย่างนะ  +userpvp YONE cv Midway");
         })
     }
+
+    if (command === "shipstats") {
+        // makes the bot say something and delete the message. As an example, it's open to anyone to use. 
+        // To get the "message" itself we join the `args` back into a string with spaces: 
+        let type = args[0];
+        let name = args.slice(1).join(' ');
+        let m = message.channel.send({embed: {
+            color: 3441103,
+            description: "ขอไปหาแปปนะ !"
+          }});
+        try {
+            const emb = await ship.getEmbed(name, type);
+            message.channel.send({ embed: emb })
+            m.then((m) => {
+                m.delete()
+            })
+        } catch (err) {
+            // message.channel.send(emb)
+            m.then((m) => {
+                m.edit({embed: {
+                    color: 1441103,
+                    description: "ประเภทเรือหรือชื่อเรือ ไม่ตรงกับคำค้นหา ลองใหม่จ้า~ \nตัวอย่างนะ  +shipstats bb ARP Kongō\n(สำหรับบางลำมันเช็ค top modules ไม่ได้ สาเหตุมาจาก API ครับ เช่น Iowa งี้ กำลังหาทางแก้อยู่"
+                  }});
+            })
+            // message.channel.send("ประเภทเรือหรือชื่อเรือ ไม่ตรงกับคำค้นหา ลองใหม่จ้า~ \nตัวอย่างนะ  +shipstats bb ARP Kongō\n(สำหรับบางลำมันเช็ค top modules ไม่ได้ สาเหตุมาจาก API ครับ เช่น Iowa งี้ กำลังหาทางแก้อยู่");
+        }
+    }
 });
 
 // Create an event listener for new guild members
@@ -394,7 +430,7 @@ client.on('message', message => {
     // If the message is "ping"
     if (message.content === '++' || /\+\+/.test(message.content)) {
         // Send "pong" to the same channel
-        message.channel.send(message.author.username + ' บอกว่า '+ message.content);
+        message.channel.send(message.author.username + ' บอกว่า ' + message.content);
         // message.channel.send('บอกว่า ++');
     }
 

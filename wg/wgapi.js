@@ -36,6 +36,19 @@ function getShip(shipid) {
 
 }
 
+function topModules(shipid) {
+    return new Promise((resolve, reject) => {
+        wg.getship_id({
+            "fields": 'modules',
+            "ship_id": shipid,
+        }).then(function (result) {
+            // console.log(result.data);
+            resolve(result.data);
+        });
+    });
+
+}
+
 function getShipidstr(shipid) {
     return new Promise((resolve, reject) => {
         wg.getship_id({
@@ -114,19 +127,30 @@ async function testfunction(name, type) {
         // const shipid = await search_ship("ARP Haruna");
         // console.log(shipid);
         // console.log(found);
-        const info = await getShip(shipid);
-        console.log(info);
+        const info = await topModules(shipid);
+        // console.log(info);
         // return info;
+        let obj;
         for (const i in info) {
-            console.log(info[i].default_profile.mobility.total);
+            // console.log(info[i].modules);
+            obj = info[i].modules;
         }
+        let obj2 = []
+        for (const i in obj) {
+            // if(obj[i].length > 0){
+            // console.log(i)
+            // console.log(obj[i][obj[i].length-1])
+            obj2.push(obj[i][obj[i].length - 1])
+            // }
+        }
+        console.log(obj2)
+        return obj2;
     } catch (err) {
         console.log("not found here")
         console.error(messagee.err);
     }
 }
 
-// testfunction("ARP Myoko", "ca");
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Search accId by acc name
 let nickname;
@@ -213,7 +237,74 @@ exports.getStr = async function testStr(name, type) {
     }
 }
 
+exports.getShipType = async function bloom(type) {
+    try {
+        const shiptype = await getType(type);
+        // console.log(shiptype)
+        return shiptype
+    } catch (err) {
+        console.error(message.err)
+    }
+}
+
 // testPvp("Atlanta", "ca", "chlra")
 // search_ship("ARP Myoko", "Cruiser");
 // testStr("Atlanta","Cruiser");
 // getPlayerShip("2007257267", "4288591856");
+
+
+/////////////////////////////////////////////////////////////////////
+//Get Top Modules
+
+// getShipTop("4287543280", modules)
+function getShipTop(shipid, modules) {
+    return new Promise((resolve, reject) => {
+        wg.getship_top({
+            "ship_id": shipid,
+            "artillery_id": modules[4],
+            "dive_bomber_id": modules[8],
+            "engine_id": modules[0],
+            "fighter_id": modules[2],
+            "fire_control_id": modules[6],
+            "flight_control_id": modules[7],
+            "hull_id": modules[3],
+            "torpedo_bomber_id": modules[1],
+            "torpedoes_id": modules[5]
+        }).then(function (result) {
+            // console.log(result.data);
+            if (result.status == "ok")
+                resolve(result.data);
+            else
+                reject(result.message)
+        })
+    });
+}
+
+exports.topModules = async function topmod(name, type) {
+    try {
+        const shiptype = await getType(type);
+        const shipid = await search_ship(name, shiptype);
+        const info = await topModules(shipid);
+        // console.log(info);
+        // return info;
+        let obj;
+        for (const i in info) {
+            obj = info[i].modules;
+        }
+        let modules = []
+        for (const i in obj) {
+            // console.log(obj[i][obj[i].length - 1])
+            modules.push(obj[i][obj[i].length - 1])
+        }
+        // console.log(modules)
+        const top = await getShipTop(shipid, modules)
+        if (top)
+            return top;
+        else
+            return
+    } catch (err) {
+        console.error(err)
+    }
+}
+// topModules("4282267344")
+// topmod("Cleveland", "ca")
