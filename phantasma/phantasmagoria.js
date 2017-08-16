@@ -32,7 +32,7 @@ client.on("ready", () => {
     // Example of changing the bot's playing game to something useful. `client.user` is what the
     // docs refer to as the "ClientUser".
     //   client.user.setGame(`on ${client.guilds.size} servers`);
-    client.user.setGame(`SoYeon services on ${client.guilds.size} servers with ${client.users.size} members!`);
+    client.user.setGame('SoYeon serving on '+client.guilds.size+' servers with '+client.users.size+' members!');
     // client.user.setGame('+Command is the one that betrayed you!', 'https://www.twitch.tv/osulive');
 });
 
@@ -401,7 +401,7 @@ client.on("message", async message => {
             // message.channel.send(emb)
             m.then((m) => {
                 m.edit({embed: {
-                    color: 1441103,
+                    color: 2441199,
                     description: "ประเภทเรือหรือชื่อเรือ ไม่ตรงกับคำค้นหา ลองใหม่จ้า~ \nตัวอย่างนะ  +shipstats bb ARP Kongō\n(สำหรับบางลำมันเช็ค top modules ไม่ได้ สาเหตุมาจาก API ครับ เช่น Iowa งี้ กำลังหาทางแก้อยู่"
                   }});
             })
