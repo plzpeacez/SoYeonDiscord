@@ -32,7 +32,8 @@ client.on("ready", () => {
     // Example of changing the bot's playing game to something useful. `client.user` is what the
     // docs refer to as the "ClientUser".
     //   client.user.setGame(`on ${client.guilds.size} servers`);
-    client.user.setGame('SoYeon serving on '+client.guilds.size+' servers with '+client.users.size+' members!');
+    client.user.setPresence({ game: { name: 'SoYeon serving on '+client.guilds.size+' servers with '+client.users.size+' members! thanks for trusting.', type: 0 } });
+    // client.user.setGame('SoYeon serving on '+client.guilds.size+' servers with '+client.users.size+' members!');
     // client.user.setGame('+Command is the one that betrayed you!', 'https://www.twitch.tv/osulive');
 });
 
