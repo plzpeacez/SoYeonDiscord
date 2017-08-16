@@ -453,7 +453,7 @@ client.on("message", async message => {
         if (command === "sig") {
             const sigMessage = args.join(" ");
             // message.author.send("Your message here." + message.content);
-            client.user.setGame(sigMessage);
+            client.user.setPresence({ game: { name: sigMessage, type: 0 } });
             message.author.send("Your message was setted.");
         }
 
