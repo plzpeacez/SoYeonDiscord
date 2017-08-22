@@ -32,9 +32,8 @@ client.on("ready", () => {
     // Example of changing the bot's playing game to something useful. `client.user` is what the
     // docs refer to as the "ClientUser".
     //   client.user.setGame(`on ${client.guilds.size} servers`);
-    client.user.setPresence({ game: { name: 'SoYeon serving on '+client.guilds.size+' servers with '+client.users.size+' members! thanks for trusting.', type: 0 } });
-    // client.user.setGame('SoYeon serving on '+client.guilds.size+' servers with '+client.users.size+' members! thanks for trusting.');
-    // client.user.setGame('Command is the one that betrayed you!');
+    client.user.setPresence({ game: { name: 'SoYeon serving on ' + client.guilds.size + ' servers with ' + client.users.size + ' members! thanks for trusting.', type: 0 } });
+    // client.user.setGame('+Command is the one that betrayed you!', 'https://www.twitch.tv/osulive');
 });
 
 client.on("guildCreate", guild => {
@@ -77,6 +76,10 @@ client.on("message", async message => {
         // The second ping is an average latency between the bot and the websocket server (one-way, not round-trip)
         const m = await message.channel.send("Ping?");
         m.edit(`Pong! Latency is ${m.createdTimestamp - message.createdTimestamp}ms. API Latency is ${Math.round(client.ping)}ms`);
+    }
+
+    if (command === "help") {
+        message.channel.send("Go to \nhttp://rchelincle.me/soyeon \nfor check out all commands");
     }
 
     if (command === "say") {
@@ -166,41 +169,59 @@ client.on("message", async message => {
         // Then we delete the command message (sneaky, right?). The catch just ignores the error with a cute smiley thing.
         // message.delete().catch(O_o => { });
         // And we get the bot to say the thing: 
-        osu.get_user({
-            "u": uStat,
-            "m": uMode
-        }).then(function (result) {
-            // console.log(result[0]);
-            // message.channel.send(JSON.stringify(result[0].username));
+        let m = message.channel.send({
+            embed: {
+                color: 3441103,
+                description: "ขอไปหาแปปนะ !"
+            }
+        });
+        try {
+            const result = await osu.getUserStat(uStat, uMode)
+            // console.log(result)
             if (!result[0]) {
-                message.channel.send("Doesn't matched.");
+                // message.channel.send("Doesn't matched.");
+                m.then((m) => {
+                    m.edit({
+                        embed: {
+                            color: 2441199,
+                            description: "หาไม่เจอเลยจ้า T_T"
+                        }
+                    });
+                })
                 return;
             }
             const embed = new Discord.RichEmbed()
                 .setTitle("Player: " + JSON.stringify(result[0].username).replace(/\"/g, "") + " Level: " + Math.floor(Number(result[0].level)) + " #" + JSON.stringify(result[0].pp_country_rank).replace(/\"/g, "") + " of " + JSON.stringify(result[0].country).replace(/\"/g, ""))
                 .setAuthor("Stats for " + JSON.stringify(result[0].username).replace(/\"/g, "") + " #" + Number(result[0].pp_rank).toLocaleString())
-                /*
-                 * Alternatively, use "#00AE86", [0, 174, 134] or an integer number.
-                 */
-                .setColor(0x00AE86)
+                .setColor([0, 174, 164])
                 .setDescription("Ranked Score: " + Number(result[0].ranked_score).toLocaleString())
                 .addField("Hit Accuracy: ", Number(result[0].accuracy).toFixed(2) + "%", true)
-                // .setDescription("Hit Accuracy: " + JSON.stringify(result[0].accuracy))
-                // .setDescription("Play Count: " + JSON.stringify(result[0].playcount))
                 .addField("Play Count: ", Number(result[0].playcount).toLocaleString(), true)
-                // .setDescription("Total Score: " + JSON.stringify(result[0].total_score))
                 .addField("Total Score: ", Number(result[0].total_score).toLocaleString(), true)
                 // .setDescription("SS: " + JSON.stringify(result[0].count_rank_ss) + " S: " + JSON.stringify(result[0].count_rank_s) + " A: " + JSON.stringify(result[0].count_rank_a))
                 .addField("Total Rank achives ", "SS: " + JSON.stringify(result[0].count_rank_ss).replace(/\"/g, "") + " S: " + JSON.stringify(result[0].count_rank_s).replace(/\"/g, "") + " A: " + JSON.stringify(result[0].count_rank_a).replace(/\"/g, ""), true)
                 .addField("Total Hit Count ", "300: " + Number(result[0].count300).toLocaleString() + " Hits \n100: " + Number(result[0].count100).toLocaleString() + " Hits \n50: " + Number(result[0].count50).toLocaleString() + " Hits", true)
-                // .setFooter("This is the footer text, it can hold 2048 characters")
-                // .setImage("http://i.imgur.com/yVpymuV.png")
                 .setThumbnail("http://s.ppy.sh/a/" + JSON.stringify(result[0].user_id).replace(/\"/g, ""))
                 .setTimestamp()
+                .setFooter("Requested @ " + message.author.username, message.author.avatarURL)
                 .setURL("https://osu.ppy.sh/u/" + JSON.stringify(result[0].user_id).replace(/\"/g, ""))
 
             message.channel.send({ embed });
-        });
+            m.then((m) => {
+                m.delete()
+            })
+        } catch (err) {
+            // message.channel.send("Doesn't matched.");
+            m.then((m) => {
+                m.edit({
+                    embed: {
+                        color: 2441199,
+                        description: "หาไม่เจอเลยจ้า T_T"
+                    }
+                });
+            })
+        }
+
         // message.channel.send(sayMessage);
     }
 
@@ -217,10 +238,24 @@ client.on("message", async message => {
         // Then we delete the command message (sneaky, right?). The catch just ignores the error with a cute smiley thing.
         // message.delete().catch(O_o => { });
         // And we get the bot to say the thing: 
+        let m = message.channel.send({
+            embed: {
+                color: 3441103,
+                description: "ขอไปหาแปปนะ !"
+            }
+        });
         try {
             const result = await osu.getUserBest(uRecent, uMode);
             if (!result[0]) {
-                message.channel.send("Doesn't matched.");
+                // message.channel.send("Doesn't matched.");
+                m.then((m) => {
+                    m.edit({
+                        embed: {
+                            color: 2441199,
+                            description: "หาไม่เจอเลยจ้า T_T"
+                        }
+                    });
+                })
                 return;
             }
             const result1 = await osu.getBeatmap(result[0].beatmap_id, uMode);
@@ -232,11 +267,23 @@ client.on("message", async message => {
                 .addField("Max Combo: ", Number(result[0].maxcombo).toLocaleString(), true)
                 .addField("Statistics ", "Hit 300:  " + Number(result[0].count300).toLocaleString() + " \nHit 100:   " + Number(result[0].count100).toLocaleString() + " \nHit 50:     " + Number(result[0].count50).toLocaleString() + " \nMiss:       " + Number(result[0].countmiss).toLocaleString(), true)
                 .setTimestamp()
+                .setFooter("Requested @ " + message.author.username, message.author.avatarURL)
                 .setImage("https://b.ppy.sh/thumb/" + JSON.stringify(result1[0].beatmapset_id).replace(/\"/g, "") + "l.jpg")
                 .setThumbnail("https://s.ppy.sh/images/" + JSON.stringify(result[0].rank).replace(/\"/g, "") + ".png")
             message.channel.send({ embed });
+            m.then((m) => {
+                m.delete()
+            })
         } catch (err) {
-            message.channel.send("Doesn't matched.");
+            // message.channel.send("Doesn't matched.");
+            m.then((m) => {
+                m.edit({
+                    embed: {
+                        color: 2441199,
+                        description: "หาไม่เจอเลยจ้า T_T"
+                    }
+                });
+            })
         }
     }
 
@@ -253,10 +300,24 @@ client.on("message", async message => {
         // Then we delete the command message (sneaky, right?). The catch just ignores the error with a cute smiley thing.
         // message.delete().catch(O_o => { });
         // And we get the bot to say the thing: 
+        let m = message.channel.send({
+            embed: {
+                color: 3441103,
+                description: "ขอไปหาแปปนะ !"
+            }
+        });
         try {
             const recent = await osu.getUesrRecent(uRecent, uMode);
             if (!recent[0]) {
-                message.channel.send("Doesn't played in last 24 hr.");
+                // message.channel.send("Doesn't played in last 24 hr.");
+                m.then((m) => {
+                    m.edit({
+                        embed: {
+                            color: 2441199,
+                            description: "รู้สึกจะไม่ได้เข้าเลยใน 1 วันที่ผ่านมา"
+                        }
+                    });
+                })
                 return;
             }
             const beatmap = await osu.getBeatmap(recent[0].beatmap_id, uMode);
@@ -268,11 +329,23 @@ client.on("message", async message => {
                 .addField("Max Combo: ", Number(recent[0].maxcombo).toLocaleString(), true)
                 .addField("Statistics ", "Hit 300:  " + Number(recent[0].count300).toLocaleString() + " \nHit 100:   " + Number(recent[0].count100).toLocaleString() + " \nHit 50:     " + Number(recent[0].count50).toLocaleString() + " \nMiss:       " + Number(recent[0].countmiss).toLocaleString(), true)
                 .setTimestamp()
+                .setFooter("Requested @ " + message.author.username, message.author.avatarURL)
                 .setImage("https://b.ppy.sh/thumb/" + JSON.stringify(beatmap[0].beatmapset_id).replace(/\"/g, "") + "l.jpg")
                 .setThumbnail("https://s.ppy.sh/images/" + JSON.stringify(recent[0].rank).replace(/\"/g, "") + ".png")
             message.channel.send({ embed });
+            m.then((m) => {
+                m.delete()
+            })
         } catch (err) {
-            message.channel.send("Doesn't played in last 24 hr.");
+            // message.channel.send("Doesn't played in last 24 hr.");
+            m.then((m) => {
+                m.edit({
+                    embed: {
+                        color: 2441199,
+                        description: "รู้สึกจะไม่ได้เข้าเลยใน 1 วันที่ผ่านมา"
+                    }
+                });
+            })
         }
     }
 
@@ -296,10 +369,39 @@ client.on("message", async message => {
                 obj = result[i];
                 // console.log(result[i].description);
             }
-            let stat = "Survivability: " + Number(obj.default_profile.armour.total).toLocaleString() + "\nTorpedoes: " + Number(obj.default_profile.weaponry.torpedoes).toLocaleString();
-            let stat2 = "\nAircraft: " + Number(obj.default_profile.weaponry.aircraft).toLocaleString() + "\nArtillery: " + Number(obj.default_profile.weaponry.artillery).toLocaleString();
-            let stat3 = "\nAA Defense: " + Number(obj.default_profile.weaponry.anti_aircraft).toLocaleString() + "\nManeuverability: " + Number(obj.default_profile.mobility.total).toLocaleString();
-            let stat4 = "\nConcealment: " + Number(obj.default_profile.concealment.total).toLocaleString();
+
+            // Stat here
+            let surv
+            if (obj.default_profile.armour.total !== 0)
+                surv = "\nSurvivability: " + Number(obj.default_profile.armour.total).toLocaleString() + "\n" + statDisplay(Number(obj.default_profile.armour.total))
+            else surv = ""
+            let tor
+            if (obj.default_profile.weaponry.torpedoes !== 0)
+                tor = "\nTorpedoes: " + Number(obj.default_profile.weaponry.torpedoes).toLocaleString() + "\n" + statDisplay(Number(obj.default_profile.weaponry.torpedoes))
+            else tor = ""
+            let airc
+            if (obj.default_profile.weaponry.aircraft !== 0)
+                airc = "\nAircraft: " + Number(obj.default_profile.weaponry.aircraft).toLocaleString() + "\n" + statDisplay(Number(obj.default_profile.weaponry.aircraft))
+            else airc = ""
+            let arti
+            if (obj.default_profile.weaponry.artillery !== 0)
+                arti = "\nArtillery: " + Number(obj.default_profile.weaponry.artillery).toLocaleString() + "\n" + statDisplay(Number(obj.default_profile.weaponry.artillery))
+            else arti = ""
+            let aad
+            if (obj.default_profile.weaponry.anti_aircraft !== 0)
+                aad = "\nAA Defense: " + Number(obj.default_profile.weaponry.anti_aircraft).toLocaleString() + "\n" + statDisplay(Number(obj.default_profile.weaponry.anti_aircraft))
+            else aad = ""
+            let mane
+            if (obj.default_profile.mobility.total !== 0)
+                mane = "\nManeuverability: " + Number(obj.default_profile.mobility.total).toLocaleString() + "\n" + statDisplay(Number(obj.default_profile.mobility.total))
+            else mane = ""
+            let conc
+            if (obj.default_profile.concealment.total !== 0)
+                conc = "\nConcealment: " + Number(obj.default_profile.concealment.total).toLocaleString() + "\n" + statDisplay(Number(obj.default_profile.concealment.total))
+            else conc = ""
+            let stat = surv + tor + airc + arti + aad + mane + conc
+
+            // Richembed here
             const embed = new Discord.RichEmbed()
                 .setColor(3447003)
                 .setTitle("World of Warships Encyclopedia")
@@ -312,8 +414,9 @@ client.on("message", async message => {
                 .addField("Health: ", Number(obj.default_profile.armour.health).toLocaleString(), true)
                 .addField("Turning Radius: ", Number(obj.default_profile.mobility.turning_radius).toLocaleString() + " m", true)
                 .addField("Max Speed: ", Number(obj.default_profile.mobility.max_speed).toLocaleString() + " knots", true)
-                .addField("Stats: ", stat + stat2 + stat3 + stat4, true)
+                .addField("Stats: ", stat, false)
                 .setTimestamp()
+                .setFooter("Requested @ " + message.author.username, message.author.avatarURL)
                 .setThumbnail("http://glossary-asia-static.gcdn.co/icons/wows/current/vehicle/types/" + JSON.stringify(pic).replace(/\"/g, "") + "/normal.png")
                 .setImage("http://glossary-asia-static.gcdn.co/icons/wows/current/vehicle/medium/" + JSON.stringify(obj.ship_id_str).replace(/\"/g, "") + ".png")
 
@@ -388,10 +491,12 @@ client.on("message", async message => {
         // To get the "message" itself we join the `args` back into a string with spaces: 
         let type = args[0];
         let name = args.slice(1).join(' ');
-        let m = message.channel.send({embed: {
-            color: 3441103,
-            description: "ขอไปหาแปปนะ !"
-          }});
+        let m = message.channel.send({
+            embed: {
+                color: 3441103,
+                description: "ขอไปหาแปปนะ !"
+            }
+        });
         try {
             const emb = await ship.getEmbed(name, type);
             message.channel.send({ embed: emb })
@@ -401,10 +506,12 @@ client.on("message", async message => {
         } catch (err) {
             // message.channel.send(emb)
             m.then((m) => {
-                m.edit({embed: {
-                    color: 2441199,
-                    description: "ประเภทเรือหรือชื่อเรือ ไม่ตรงกับคำค้นหา ลองใหม่จ้า~ \nตัวอย่างนะ  +shipstats bb ARP Kongō\n(สำหรับบางลำมันเช็ค top modules ไม่ได้ สาเหตุมาจาก API ครับ เช่น Iowa งี้ กำลังหาทางแก้อยู่"
-                  }});
+                m.edit({
+                    embed: {
+                        color: 2441199,
+                        description: "ประเภทเรือหรือชื่อเรือ ไม่ตรงกับคำค้นหา ลองใหม่จ้า~ \nตัวอย่างนะ  +shipstats bb ARP Kongō\n(สำหรับบางลำมันเช็ค top modules ไม่ได้ สาเหตุมาจาก API ครับ เช่น Iowa งี้ กำลังหาทางแก้อยู่"
+                    }
+                });
             })
             // message.channel.send("ประเภทเรือหรือชื่อเรือ ไม่ตรงกับคำค้นหา ลองใหม่จ้า~ \nตัวอย่างนะ  +shipstats bb ARP Kongō\n(สำหรับบางลำมันเช็ค top modules ไม่ได้ สาเหตุมาจาก API ครับ เช่น Iowa งี้ กำลังหาทางแก้อยู่");
         }
@@ -504,4 +611,18 @@ function getMode(mode) {
     else {
         return 0;
     }
+}
+
+function statDisplay(num) {
+    let dis = ""
+    for (var i = 1; i <= num; i++) {
+        if (i % 10 | i == 0) {
+            dis += "l"
+        }
+        else {
+            dis += "|"
+        }
+    }
+    // console.log(dis)
+    return dis;
 }

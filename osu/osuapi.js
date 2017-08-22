@@ -41,15 +41,14 @@ exports.getUesrRecent = function getUesrRecent(user, mode) {
     })
 }
 
-function getUesrRecent(user, mode) {
+exports.getUserStat = function getUserStat(user, mode) {
     return new Promise((resolve, reject) => {
-        osu.get_user_recent({
+        osu.get_user({
             "u": user,
-            "m": mode,
-            "limit": 1
+            "m": mode
         }).then(function (result) {
-            console.log(result)
-            resolve(result[0])
+            // console.log(result)
+            resolve(result)
         })
     })
 }
