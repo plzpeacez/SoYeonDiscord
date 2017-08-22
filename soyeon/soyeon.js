@@ -12,10 +12,16 @@ const config = require("./SoYeon.json");
 // config.prefix contains the message prefix.
 
 // Load Osu Api
-const osu = require("osu")(config.osuapi); // replace xxxxxxxx with your API key 
+const osu = require("../osu/osuapi");
 
 // Load WG API
 const wg = require("../wg/wgapi");
+
+// Load Ships embed
+const ship = require("./ship");
+
+// Load shadowverse embed
+const sdv = require("./shadowverse");
 
 // variables in use
 // var beatmaps = null;
@@ -29,21 +35,22 @@ client.on("ready", () => {
     // Example of changing the bot's playing game to something useful. `client.user` is what the
     // docs refer to as the "ClientUser".
     //   client.user.setGame(`on ${client.guilds.size} servers`);
-    // client.user.setGame('->Command is the one that betrayed you!');
+    // client.user.setPresence({ game: { name: 'SoYeon serving on ' + client.guilds.size + ' servers with ' + client.users.size + ' members! thanks for trusting.', type: 0 } });
+    // client.user.setGame('+Command is the one that betrayed you!', 'https://www.twitch.tv/osulive');
 });
 
 client.on("guildCreate", guild => {
     // This event triggers when the bot joins a guild.
     console.log(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`);
     //   client.user.setGame(`on ${client.guilds.size} servers`);
-    // client.user.setGame('->Command is the one that betrayed you!');
+    // client.user.setGame('+Command is the one that betrayed you!', 'https://www.twitch.tv/osulive');
 });
 
 client.on("guildDelete", guild => {
     // this event triggers when the bot is removed from a guild.
     console.log(`I have been removed from: ${guild.name} (id: ${guild.id})`);
     //   client.user.setGame(`on ${client.guilds.size} servers`);
-    // client.user.setGame('->Command is the one that betrayed you!');
+    // client.user.setGame('+Command is the one that betrayed you!', 'https://www.twitch.tv/osulive');
 });
 
 
@@ -72,6 +79,10 @@ client.on("message", async message => {
         // The second ping is an average latency between the bot and the websocket server (one-way, not round-trip)
         const m = await message.channel.send("Ping?");
         m.edit(`Pong! Latency is ${m.createdTimestamp - message.createdTimestamp}ms. API Latency is ${Math.round(client.ping)}ms`);
+    }
+
+    if (command === "help") {
+        message.channel.send("Go to \nhttp://rchelincle.me/soyeon \nfor check out all commands");
     }
 
     if (command === "say") {
@@ -161,41 +172,59 @@ client.on("message", async message => {
         // Then we delete the command message (sneaky, right?). The catch just ignores the error with a cute smiley thing.
         // message.delete().catch(O_o => { });
         // And we get the bot to say the thing: 
-        await osu.get_user({
-            "u": uStat,
-            "m": uMode
-        }).then(function (result) {
-            // console.log(result[0]);
-            // message.channel.send(JSON.stringify(result[0].username));
+        let m = message.channel.send({
+            embed: {
+                color: 3441103,
+                description: "ขอไปหาแปปนะ !"
+            }
+        });
+        try {
+            const result = await osu.getUserStat(uStat, uMode)
+            // console.log(result)
             if (!result[0]) {
-                message.channel.send("Doesn't matched.");
+                // message.channel.send("Doesn't matched.");
+                m.then((m) => {
+                    m.edit({
+                        embed: {
+                            color: 2441199,
+                            description: "หาไม่เจอเลยจ้า T_T"
+                        }
+                    });
+                })
                 return;
             }
             const embed = new Discord.RichEmbed()
                 .setTitle("Player: " + JSON.stringify(result[0].username).replace(/\"/g, "") + " Level: " + Math.floor(Number(result[0].level)) + " #" + JSON.stringify(result[0].pp_country_rank).replace(/\"/g, "") + " of " + JSON.stringify(result[0].country).replace(/\"/g, ""))
                 .setAuthor("Stats for " + JSON.stringify(result[0].username).replace(/\"/g, "") + " #" + Number(result[0].pp_rank).toLocaleString())
-                /*
-                 * Alternatively, use "#00AE86", [0, 174, 134] or an integer number.
-                 */
-                .setColor(0x00AE86)
+                .setColor([0, 174, 164])
                 .setDescription("Ranked Score: " + Number(result[0].ranked_score).toLocaleString())
                 .addField("Hit Accuracy: ", Number(result[0].accuracy).toFixed(2) + "%", true)
-                // .setDescription("Hit Accuracy: " + JSON.stringify(result[0].accuracy))
-                // .setDescription("Play Count: " + JSON.stringify(result[0].playcount))
                 .addField("Play Count: ", Number(result[0].playcount).toLocaleString(), true)
-                // .setDescription("Total Score: " + JSON.stringify(result[0].total_score))
                 .addField("Total Score: ", Number(result[0].total_score).toLocaleString(), true)
                 // .setDescription("SS: " + JSON.stringify(result[0].count_rank_ss) + " S: " + JSON.stringify(result[0].count_rank_s) + " A: " + JSON.stringify(result[0].count_rank_a))
                 .addField("Total Rank achives ", "SS: " + JSON.stringify(result[0].count_rank_ss).replace(/\"/g, "") + " S: " + JSON.stringify(result[0].count_rank_s).replace(/\"/g, "") + " A: " + JSON.stringify(result[0].count_rank_a).replace(/\"/g, ""), true)
                 .addField("Total Hit Count ", "300: " + Number(result[0].count300).toLocaleString() + " Hits \n100: " + Number(result[0].count100).toLocaleString() + " Hits \n50: " + Number(result[0].count50).toLocaleString() + " Hits", true)
-                // .setFooter("This is the footer text, it can hold 2048 characters")
-                // .setImage("http://i.imgur.com/yVpymuV.png")
                 .setThumbnail("http://s.ppy.sh/a/" + JSON.stringify(result[0].user_id).replace(/\"/g, ""))
                 .setTimestamp()
+                .setFooter("Requested @ " + message.author.username, message.author.avatarURL)
                 .setURL("https://osu.ppy.sh/u/" + JSON.stringify(result[0].user_id).replace(/\"/g, ""))
 
             message.channel.send({ embed });
-        });
+            m.then((m) => {
+                m.delete()
+            })
+        } catch (err) {
+            // message.channel.send("Doesn't matched.");
+            m.then((m) => {
+                m.edit({
+                    embed: {
+                        color: 2441199,
+                        description: "หาไม่เจอเลยจ้า T_T"
+                    }
+                });
+            })
+        }
+
         // message.channel.send(sayMessage);
     }
 
@@ -206,55 +235,59 @@ client.on("message", async message => {
         const mode = args[1];
         const uMode = await getMode(mode);
         if (!args[1]) {
-            message.channel.send("ระบุโหมดด้วยจ้า~ \nosu | taiko | ctb | mania \nตัวอย่าง +stat cookiezi osu");
+            message.channel.send("ระบุโหมดด้วยจ้า~ \nosu | taiko | ctb | mania \nตัวอย่าง +best cookiezi osu");
             return;
         }
         // Then we delete the command message (sneaky, right?). The catch just ignores the error with a cute smiley thing.
         // message.delete().catch(O_o => { });
         // And we get the bot to say the thing: 
-        osu.get_user_best({
-            "u": uRecent,
-            "m": uMode,
-            "limit": 1
-        }).then(function (result) {
+        let m = message.channel.send({
+            embed: {
+                color: 3441103,
+                description: "ขอไปหาแปปนะ !"
+            }
+        });
+        try {
+            const result = await osu.getUserBest(uRecent, uMode);
             if (!result[0]) {
-                message.channel.send("Doesn't matched.");
+                // message.channel.send("Doesn't matched.");
+                m.then((m) => {
+                    m.edit({
+                        embed: {
+                            color: 2441199,
+                            description: "หาไม่เจอเลยจ้า T_T"
+                        }
+                    });
+                })
                 return;
             }
-            // console.log(result);
-            // beatmaps = JSON.stringify(result[0]);
-            // console.log(beatmaps);
-            refreshIntervalId = setInterval(function () {
-                // getBm(result[0].beatmap_id);
-                // message.channel.send(getBm(result[0].beatmap_id));
-                osu.get_beatmaps({
-                    "b": result[0].beatmap_id,
-                    "m": uMode,
-                    "limit": 1
-                }).then(function (result1) {
-                    // console.log(result1);
-                    clearInterval(refreshIntervalId);
-                    // beatmapObj = result[0];
-                    const embed = new Discord.RichEmbed()
-                        .setTitle(JSON.stringify(result1[0].artist).replace(/\"/g, "") + " - " + JSON.stringify(result1[0].title).replace(/\"/g, ""))
-                        .setColor(0x00FE16)
-                        .setDescription("tags: " + JSON.stringify(result1[0].tags).replace(/\"/g, ""))
-                        .addField("Total Score: ", Number(result[0].score).toLocaleString(), true)
-                        .addField("Max Combo: ", Number(result[0].maxcombo).toLocaleString(), true)
-                        .addField("Statistics ", "Hit 300:  " + Number(result[0].count300).toLocaleString() + " \nHit 100:   " + Number(result[0].count100).toLocaleString() + " \nHit 50:     " + Number(result[0].count50).toLocaleString() + " \nMiss:       " + Number(result[0].countmiss).toLocaleString(), true)
-                        .setTimestamp()
-                        .setImage("https://b.ppy.sh/thumb/" + JSON.stringify(result1[0].beatmapset_id).replace(/\"/g, "") + "l.jpg")
-                        .setThumbnail("https://s.ppy.sh/images/" + JSON.stringify(result[0].rank).replace(/\"/g, "") + ".png")
-                    // .setImage("https://b.ppy.sh/thumb/"+JSON.stringify(result1[0].beatmapset_id)+".jpg")
-                    // return embed1;
-                    message.channel.send({ embed });
-                    // beatmaps = null;
+            const result1 = await osu.getBeatmap(result[0].beatmap_id, uMode);
+            const embed = new Discord.RichEmbed()
+                .setTitle(JSON.stringify(result1[0].artist).replace(/\"/g, "") + " - " + JSON.stringify(result1[0].title).replace(/\"/g, ""))
+                .setColor(0x00FE16)
+                .setDescription("tags: " + JSON.stringify(result1[0].tags).replace(/\"/g, ""))
+                .addField("Total Score: ", Number(result[0].score).toLocaleString(), true)
+                .addField("Max Combo: ", Number(result[0].maxcombo).toLocaleString(), true)
+                .addField("Statistics ", "Hit 300:  " + Number(result[0].count300).toLocaleString() + " \nHit 100:   " + Number(result[0].count100).toLocaleString() + " \nHit 50:     " + Number(result[0].count50).toLocaleString() + " \nMiss:       " + Number(result[0].countmiss).toLocaleString(), true)
+                .setTimestamp()
+                .setFooter("Requested @ " + message.author.username, message.author.avatarURL)
+                .setImage("https://b.ppy.sh/thumb/" + JSON.stringify(result1[0].beatmapset_id).replace(/\"/g, "") + "l.jpg")
+                .setThumbnail("https://s.ppy.sh/images/" + JSON.stringify(result[0].rank).replace(/\"/g, "") + ".png")
+            message.channel.send({ embed });
+            m.then((m) => {
+                m.delete()
+            })
+        } catch (err) {
+            // message.channel.send("Doesn't matched.");
+            m.then((m) => {
+                m.edit({
+                    embed: {
+                        color: 2441199,
+                        description: "หาไม่เจอเลยจ้า T_T"
+                    }
                 });
-            }, 2000);
-
-            // message.channel.send({ embed1 });
-        });
-        // message.channel.send(sayMessage);
+            })
+        }
     }
 
     if (command === "recent") {
@@ -264,55 +297,59 @@ client.on("message", async message => {
         const mode = args[1];
         const uMode = await getMode(mode);
         if (!args[1]) {
-            message.channel.send("ระบุโหมดด้วยจ้า~ \nosu | taiko | ctb | mania \nตัวอย่าง +stat cookiezi osu");
+            message.channel.send("ระบุโหมดด้วยจ้า~ \nosu | taiko | ctb | mania \nตัวอย่าง +recent cookiezi osu");
             return;
         }
         // Then we delete the command message (sneaky, right?). The catch just ignores the error with a cute smiley thing.
         // message.delete().catch(O_o => { });
         // And we get the bot to say the thing: 
-        osu.get_user_recent({
-            "u": uRecent,
-            "m": uMode,
-            "limit": 1
-        }).then(function (result) {
-            if (!result[0]) {
-                message.channel.send("Doesn't played in last 24 hr.");
+        let m = message.channel.send({
+            embed: {
+                color: 3441103,
+                description: "ขอไปหาแปปนะ !"
+            }
+        });
+        try {
+            const recent = await osu.getUesrRecent(uRecent, uMode);
+            if (!recent[0]) {
+                // message.channel.send("Doesn't played in last 24 hr.");
+                m.then((m) => {
+                    m.edit({
+                        embed: {
+                            color: 2441199,
+                            description: "รู้สึกจะไม่ได้เข้าเลยใน 1 วันที่ผ่านมา"
+                        }
+                    });
+                })
                 return;
             }
-            // console.log(result);
-            // beatmaps = JSON.stringify(result[0]);
-            // console.log(beatmaps);
-            refreshIntervalId = setInterval(function () {
-                // getBm(result[0].beatmap_id);
-                // message.channel.send(getBm(result[0].beatmap_id));
-                osu.get_beatmaps({
-                    "b": result[0].beatmap_id,
-                    "m": uMode,
-                    "limit": 1
-                }).then(function (result1) {
-                    // console.log(result1);
-                    clearInterval(refreshIntervalId);
-                    // beatmapObj = result[0];
-                    const embed = new Discord.RichEmbed()
-                        .setTitle(JSON.stringify(result1[0].artist).replace(/\"/g, "") + " - " + JSON.stringify(result1[0].title).replace(/\"/g, ""))
-                        .setColor(0x00FE16)
-                        .setDescription("tags: " + JSON.stringify(result1[0].tags).replace(/\"/g, ""))
-                        .addField("Total Score: ", Number(result[0].score).toLocaleString(), true)
-                        .addField("Max Combo: ", Number(result[0].maxcombo).toLocaleString(), true)
-                        .addField("Statistics ", "Hit 300:  " + Number(result[0].count300).toLocaleString() + " \nHit 100:   " + Number(result[0].count100).toLocaleString() + " \nHit 50:     " + Number(result[0].count50).toLocaleString() + " \nMiss:       " + Number(result[0].countmiss).toLocaleString(), true)
-                        .setTimestamp()
-                        .setImage("https://b.ppy.sh/thumb/" + JSON.stringify(result1[0].beatmapset_id).replace(/\"/g, "") + "l.jpg")
-                        .setThumbnail("https://s.ppy.sh/images/" + JSON.stringify(result[0].rank).replace(/\"/g, "") + ".png")
-                    // .setImage("https://b.ppy.sh/thumb/"+JSON.stringify(result1[0].beatmapset_id)+".jpg")
-                    // return embed1;
-                    message.channel.send({ embed });
-                    // beatmaps = null;
+            const beatmap = await osu.getBeatmap(recent[0].beatmap_id, uMode);
+            const embed = new Discord.RichEmbed()
+                .setTitle(JSON.stringify(beatmap[0].artist).replace(/\"/g, "") + " - " + JSON.stringify(beatmap[0].title).replace(/\"/g, ""))
+                .setColor(0x00FE16)
+                .setDescription("tags: " + JSON.stringify(beatmap[0].tags).replace(/\"/g, ""))
+                .addField("Total Score: ", Number(recent[0].score).toLocaleString(), true)
+                .addField("Max Combo: ", Number(recent[0].maxcombo).toLocaleString(), true)
+                .addField("Statistics ", "Hit 300:  " + Number(recent[0].count300).toLocaleString() + " \nHit 100:   " + Number(recent[0].count100).toLocaleString() + " \nHit 50:     " + Number(recent[0].count50).toLocaleString() + " \nMiss:       " + Number(recent[0].countmiss).toLocaleString(), true)
+                .setTimestamp()
+                .setFooter("Requested @ " + message.author.username, message.author.avatarURL)
+                .setImage("https://b.ppy.sh/thumb/" + JSON.stringify(beatmap[0].beatmapset_id).replace(/\"/g, "") + "l.jpg")
+                .setThumbnail("https://s.ppy.sh/images/" + JSON.stringify(recent[0].rank).replace(/\"/g, "") + ".png")
+            message.channel.send({ embed });
+            m.then((m) => {
+                m.delete()
+            })
+        } catch (err) {
+            // message.channel.send("Doesn't played in last 24 hr.");
+            m.then((m) => {
+                m.edit({
+                    embed: {
+                        color: 2441199,
+                        description: "รู้สึกจะไม่ได้เข้าเลยใน 1 วันที่ผ่านมา"
+                    }
                 });
-            }, 2000);
-
-            // message.channel.send({ embed1 });
-        });
-        // message.channel.send(sayMessage);
+            })
+        }
     }
 
     if (command === "shipinfo") {
@@ -320,6 +357,10 @@ client.on("message", async message => {
         // To get the "message" itself we join the `args` back into a string with spaces: 
         let type = args[0];
         let name = args.slice(1).join(' ');
+        let pic;
+        wg.getShipType(type).then((result) => {
+            pic = result;
+        })
 
         // Then we delete the command message (sneaky, right?). The catch just ignores the error with a cute smiley thing.
         // message.delete().catch(O_o => { });
@@ -331,7 +372,39 @@ client.on("message", async message => {
                 obj = result[i];
                 // console.log(result[i].description);
             }
-            let stat = "Torpedoes: " + Number(obj.default_profile.weaponry.torpedoes).toLocaleString() + "\nAircraft: " + Number(obj.default_profile.weaponry.aircraft).toLocaleString() + "\nArtillery: " + Number(obj.default_profile.weaponry.artillery).toLocaleString() + "\nAnti_aircraft: " + Number(obj.default_profile.weaponry.anti_aircraft).toLocaleString();
+
+            // Stat here
+            let surv
+            if (obj.default_profile.armour.total !== 0)
+                surv = "\nSurvivability: " + Number(obj.default_profile.armour.total).toLocaleString() + "\n" + statDisplay(Number(obj.default_profile.armour.total))
+            else surv = ""
+            let tor
+            if (obj.default_profile.weaponry.torpedoes !== 0)
+                tor = "\nTorpedoes: " + Number(obj.default_profile.weaponry.torpedoes).toLocaleString() + "\n" + statDisplay(Number(obj.default_profile.weaponry.torpedoes))
+            else tor = ""
+            let airc
+            if (obj.default_profile.weaponry.aircraft !== 0)
+                airc = "\nAircraft: " + Number(obj.default_profile.weaponry.aircraft).toLocaleString() + "\n" + statDisplay(Number(obj.default_profile.weaponry.aircraft))
+            else airc = ""
+            let arti
+            if (obj.default_profile.weaponry.artillery !== 0)
+                arti = "\nArtillery: " + Number(obj.default_profile.weaponry.artillery).toLocaleString() + "\n" + statDisplay(Number(obj.default_profile.weaponry.artillery))
+            else arti = ""
+            let aad
+            if (obj.default_profile.weaponry.anti_aircraft !== 0)
+                aad = "\nAA Defense: " + Number(obj.default_profile.weaponry.anti_aircraft).toLocaleString() + "\n" + statDisplay(Number(obj.default_profile.weaponry.anti_aircraft))
+            else aad = ""
+            let mane
+            if (obj.default_profile.mobility.total !== 0)
+                mane = "\nManeuverability: " + Number(obj.default_profile.mobility.total).toLocaleString() + "\n" + statDisplay(Number(obj.default_profile.mobility.total))
+            else mane = ""
+            let conc
+            if (obj.default_profile.concealment.total !== 0)
+                conc = "\nConcealment: " + Number(obj.default_profile.concealment.total).toLocaleString() + "\n" + statDisplay(Number(obj.default_profile.concealment.total))
+            else conc = ""
+            let stat = surv + tor + airc + arti + aad + mane + conc
+
+            // Richembed here
             const embed = new Discord.RichEmbed()
                 .setColor(3447003)
                 .setTitle("World of Warships Encyclopedia")
@@ -344,48 +417,157 @@ client.on("message", async message => {
                 .addField("Health: ", Number(obj.default_profile.armour.health).toLocaleString(), true)
                 .addField("Turning Radius: ", Number(obj.default_profile.mobility.turning_radius).toLocaleString() + " m", true)
                 .addField("Max Speed: ", Number(obj.default_profile.mobility.max_speed).toLocaleString() + " knots", true)
-                .addField("Status: ", stat, true)
+                .addField("Stats: ", stat, false)
                 .setTimestamp()
+                .setFooter("Requested @ " + message.author.username, message.author.avatarURL)
+                .setThumbnail("http://glossary-asia-static.gcdn.co/icons/wows/current/vehicle/types/" + JSON.stringify(pic).replace(/\"/g, "") + "/normal.png")
                 .setImage("http://glossary-asia-static.gcdn.co/icons/wows/current/vehicle/medium/" + JSON.stringify(obj.ship_id_str).replace(/\"/g, "") + ".png")
 
             message.channel.send({ embed });
         }).catch((err) => {
-            console.error(message.err);
-            message.channel.send("ประเภทเรือหรือชื่อเรือ ไม่ตรงกับคำค้นหา ลองใหม่จ้า~ \nตัวอย่างนะ  +shipinfo bb ARP Haruna");
+            console.log(err);
+            message.channel.send("ประเภทเรือหรือชื่อเรือ ไม่ตรงกับคำค้นหา ลองใหม่จ้า~ \nตัวอย่างนะ  +shipinfo bb ARP Kongō");
         })
     }
+
+    if (command === "xxxxxxuserpvp") {
+        // makes the bot say something and delete the message. As an example, it's open to anyone to use. 
+        // To get the "message" itself we join the `args` back into a string with spaces: 
+        let username = args[0];
+        let type = args[1];
+        let name = args.slice(2).join(' ');
+        let pic;
+        wg.getStr(name, type).then((result) => {
+            pic = result;
+        })
+
+        // Then we delete the command message (sneaky, right?). The catch just ignores the error with a cute smiley thing.
+        // message.delete().catch(O_o => { });
+        // And we get the bot to say the thing: 
+        wg.pvpStatics(name, type, username).then((result) => {
+            let obj = result;
+            // console.log(obj)
+            let stat = "Maximum destroyed per battle: " + Number(obj.pvp.max_frags_battle).toLocaleString() + "\nBase capture points: " + Number(obj.pvp.capture_points).toLocaleString();
+            let stat2 = "\nDraws: " + Number(obj.pvp.draws).toLocaleString() + "\nVictories: " + Number(obj.pvp.wins).toLocaleString();
+            let stat3 = "\nDefeats: " + Number(obj.pvp.losses).toLocaleString() + "\nMaximum Experience Points per battle: " + Number(obj.pvp.max_xp).toLocaleString();
+            let stat4 = "\nEnemy aircraft destroyed: " + Number(obj.pvp.planes_killed).toLocaleString() + "\nDamage caused: " + Number(obj.pvp.damage_dealt).toLocaleString();
+            let stat5 = "\nWarships destroyed: " + Number(obj.pvp.frags).toLocaleString() + "\nMax ships spotted: " + Number(obj.pvp.max_ships_spotted).toLocaleString();
+
+            let main = 'Maximum destroyed per battle: ' + Number(obj.pvp.main_battery.max_frags_battle).toLocaleString() + "\nHits: " + Number(obj.pvp.main_battery.hits).toLocaleString();
+            let main2 = '\nWarships destroyed: ' + Number(obj.pvp.main_battery.frags).toLocaleString() + "\nShots fired: " + Number(obj.pvp.main_battery.shots).toLocaleString();
+
+            let sec = 'Maximum destroyed per battle: ' + Number(obj.pvp.second_battery.max_frags_battle).toLocaleString() + "\nHits: " + Number(obj.pvp.second_battery.hits).toLocaleString();
+            let sec2 = '\nWarships destroyed: ' + Number(obj.pvp.second_battery.frags).toLocaleString() + "\nShots fired: " + Number(obj.pvp.second_battery.shots).toLocaleString();
+
+            let torp = 'Maximum destroyed per battle: ' + Number(obj.pvp.torpedoes.max_frags_battle).toLocaleString() + "\nHits: " + Number(obj.pvp.torpedoes.hits).toLocaleString();
+            let torp2 = '\nWarships destroyed: ' + Number(obj.pvp.torpedoes.frags).toLocaleString() + "\nShots fired: " + Number(obj.pvp.torpedoes.shots).toLocaleString();
+
+            let ramm = 'Warships destroyed: ' + Number(obj.pvp.ramming.frags).toLocaleString() + '\nMaximum destroyed per battle: ' + Number(obj.pvp.ramming.max_frags_battle).toLocaleString();
+
+            const embed = new Discord.RichEmbed()
+                .setColor("#34dde1")
+                .setTitle("Statistics of Player's Ships : " + name)
+                .setAuthor("Player: " + username)
+                // .setDescription(JSON.stringify(obj.description).replace(/\"|\\/g, ""))
+                .addField("Battles fought: ", Number(obj.battles).toLocaleString() + " Times", true)
+                .addField("Travelled: ", Number(obj.distance).toLocaleString() + " Miles", true)
+                .addField("Main battery firing statistics: ", main + main2, false)
+                .addField("Secondary armament firing statistics: ", sec + sec2, true)
+                .addField("Statistics of attacking targets with torpedoes: ", sec + sec2, false)
+                .addField("Statistics of ramming enemy warships: ", ramm, false)
+                .addField("Random battles: ", stat + stat2 + stat3 + stat4 + stat5, true)
+                // .addField("Stats: ", stat+stat2+stat3+stat4, true)
+                .setTimestamp()
+            // .setThumbnail("http://glossary-asia-static.gcdn.co/icons/wows/current/vehicle/small/" + JSON.stringify(pic).replace(/\"/g, "") + ".png")
+            // .setImage("http://glossary-asia-static.gcdn.co/icons/wows/current/vehicle/medium/" + JSON.stringify(pic).replace(/\"/g, "") + ".png")
+
+            message.channel.send({ embed });
+            // console.log(pic)
+        }).catch((err) => {
+            console.log(err);
+            message.channel.send("ประเภทเรือหรือชื่อเรือ ไม่ตรงกับคำค้นหา ลองใหม่จ้า~ \nตัวอย่างนะ  +userpvp YONE cv Midway");
+        })
+    }
+
+    if (command === "shipstats") {
+        // makes the bot say something and delete the message. As an example, it's open to anyone to use. 
+        // To get the "message" itself we join the `args` back into a string with spaces: 
+        let type = args[0];
+        let name = args.slice(1).join(' ');
+        let m = message.channel.send({
+            embed: {
+                color: 3441103,
+                description: "ขอไปหาแปปนะ !"
+            }
+        });
+        try {
+            const emb = await ship.getEmbed(name, type);
+            message.channel.send({ embed: emb })
+            m.then((m) => {
+                m.delete()
+            })
+        } catch (err) {
+            // message.channel.send(emb)
+            m.then((m) => {
+                m.edit({
+                    embed: {
+                        color: 2441199,
+                        description: "ประเภทเรือหรือชื่อเรือ ไม่ตรงกับคำค้นหา ลองใหม่จ้า~ \nตัวอย่างนะ  +shipstats bb ARP Kongō\n(สำหรับบางลำมันเช็ค top modules ไม่ได้ สาเหตุมาจาก API ครับ เช่น Iowa งี้ กำลังหาทางแก้อยู่"
+                    }
+                });
+            })
+        }
+    }
+
+    if (command === "card") {
+        // makes the bot say something and delete the message. As an example, it's open to anyone to use. 
+        // To get the "message" itself we join the `args` back into a string with spaces: 
+        let evolved = false;
+        let type;
+        let name;
+        if (args[0] === "evolv") {
+            type = args[1];
+            name = args.slice(2).join(' ');
+            evolved = true;
+        } else {
+            type = args[0];
+            name = args.slice(1).join(' ');
+        }
+        let m = message.channel.send({
+            embed: {
+                color: 3441103,
+                description: "Searching...!"
+            }
+        });
+        try {
+            const emb = await sdv.getEmbed(name, type, evolved);
+            if (!emb) {
+                m.then((m) => {
+                    m.edit({
+                        embed: {
+                            color: 2441199,
+                            description: "ไม่เจอเลยจ้า ~"
+                        }
+                    });
+                })
+            }
+            // message.channel.send({ embed: emb })
+            m.then((m) => {
+                m.edit({ embed: emb })
+            })
+        } catch (err) {
+            // message.channel.send(emb)
+            m.then((m) => {
+                m.edit({
+                    embed: {
+                        color: 2441199,
+                        description: "ไม่เจอเลยจ้า ~"
+                    }
+                });
+            })
+        }
+    }
 });
-
-// Create an event listener for new guild members
-// client.on('guildMemberAdd', member => {
-//     // Send the message to the guilds default channel (usually #general), mentioning the member
-//     member.guild.defaultChannel.send(`Welcome to the server, ${member}!`);
-
-//     // If you want to send the message to a designated channel on a server instead
-//     // you can do the following:
-//     const channel = member.guild.channels.find('name', 'member-log');
-//     // Do nothing if the channel wasn't found on this server
-//     if (!channel) return;
-//     // Send the message, mentioning the member
-//     channel.send(`Welcome to the server, ${member}`);
-// });
-
-// // Create an event listener for messages
-// client.on('message', message => {
-//     if (message.author.bot) return;
-//     // If the message is "ping"
-//     if (message.content === '++') {
-//         // Send "pong" to the same channel
-//         message.channel.send(message.author.username + ' บอกว่า ++');
-//         // message.channel.send('บอกว่า ++');
-//     }
-
-//     if (message.content === '555' || /555/.test(message.content)) {
-//         // Send "pong" to the same channel
-//         message.channel.send('โอ้ยขำ 555+');
-//         // message.channel.send('บอกว่า ++');
-//     }
-// });
 
 client.login(config.token);
 
@@ -398,7 +580,15 @@ client.on("message", async message => {
         if (command === "sig") {
             const sigMessage = args.join(" ");
             // message.author.send("Your message here." + message.content);
-            client.user.setGame(sigMessage);
+            client.user.setPresence({ game: { name: sigMessage, type: 0 } });
+            message.author.send("Your message was setted.");
+        }
+
+        if (command === "stream") {
+            const stream = args[0];
+            const sigMessage = args.slice(1).join(' ');
+            // message.author.send("Your message here." + message.content);
+            client.user.setGame(sigMessage, stream);
             message.author.send("Your message was setted.");
         }
 
@@ -441,4 +631,18 @@ function getMode(mode) {
     else {
         return 0;
     }
+}
+
+function statDisplay(num) {
+    let dis = ""
+    for (var i = 1; i <= num; i++) {
+        if (i % 10 | i == 0) {
+            dis += "l"
+        }
+        else {
+            dis += "|"
+        }
+    }
+    // console.log(dis)
+    return dis;
 }

@@ -20,6 +20,9 @@ const wg = require("../wg/wgapi");
 // Load Ships embed
 const ship = require("./ship");
 
+// Load shadowverse embed
+const sdv = require("./shadowverse");
+
 // variables in use
 // var beatmaps = null;
 var refreshIntervalId;
@@ -513,7 +516,55 @@ client.on("message", async message => {
                     }
                 });
             })
-            // message.channel.send("ประเภทเรือหรือชื่อเรือ ไม่ตรงกับคำค้นหา ลองใหม่จ้า~ \nตัวอย่างนะ  +shipstats bb ARP Kongō\n(สำหรับบางลำมันเช็ค top modules ไม่ได้ สาเหตุมาจาก API ครับ เช่น Iowa งี้ กำลังหาทางแก้อยู่");
+        }
+    }
+
+    if (command === "card") {
+        // makes the bot say something and delete the message. As an example, it's open to anyone to use. 
+        // To get the "message" itself we join the `args` back into a string with spaces: 
+        let evolved = false;
+        let type;
+        let name;
+        if (args[0] === "evolv") {
+            type = args[1];
+            name = args.slice(2).join(' ');
+            evolved = true;
+        } else {
+            type = args[0];
+            name = args.slice(1).join(' ');
+        }
+        let m = message.channel.send({
+            embed: {
+                color: 3441103,
+                description: "Searching...!"
+            }
+        });
+        try {
+            const emb = await sdv.getEmbed(name, type, evolved);
+            if (!emb) {
+                m.then((m) => {
+                    m.edit({
+                        embed: {
+                            color: 2441199,
+                            description: "ไม่เจอเลยจ้า ~"
+                        }
+                    });
+                })
+            }
+            // message.channel.send({ embed: emb })
+            m.then((m) => {
+                m.edit({ embed: emb })
+            })
+        } catch (err) {
+            // message.channel.send(emb)
+            m.then((m) => {
+                m.edit({
+                    embed: {
+                        color: 2441199,
+                        description: "ไม่เจอเลยจ้า ~"
+                    }
+                });
+            })
         }
     }
 });
