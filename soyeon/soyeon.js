@@ -1,12 +1,12 @@
 // Load up the discord.js library
 const Discord = require("discord.js");
 
-// This is your client. Some people call it `bot`, some people call it `self`, 
+// This is your client. Some people call it `bot`, some people call it `self`,
 // some might call it `cootchie`. Either way, when you see `client.something`, or `bot.something`,
 // this is what we're refering to. Your client.
 const client = new Discord.Client();
 
-// Here we load the config.json file that contains our token and our prefix values. 
+// Here we load the config.json file that contains our token and our prefix values.
 const config = require("./SoYeon.json");
 // config.token contains the bot's token
 // config.prefix contains the message prefix.
@@ -61,11 +61,11 @@ client.on("message", async message => {
     // and not get into a spam loop (we call that "botception").
     if (message.author.bot) return;
 
-    // Also good practice to ignore any message that does not start with our prefix, 
+    // Also good practice to ignore any message that does not start with our prefix,
     // which is set in the configuration file.
     if (message.content.indexOf(config.prefix) !== 0) return;
 
-    // Here we separate our "command" name, and our "arguments" for the command. 
+    // Here we separate our "command" name, and our "arguments" for the command.
     // e.g. if we have the message "+say Is this the real life?" , we'll get the following:
     // command = say
     // args = ["Is", "this", "the", "real", "life?"]
@@ -85,19 +85,23 @@ client.on("message", async message => {
         message.channel.send("Go to \nhttp://rchelincle.me/soyeon \nfor check out all commands");
     }
 
+    if (command === "hom") {
+        message.channel.send("ไปนอนนะจร๊");
+    }
+
     if (command === "say") {
-        // makes the bot say something and delete the message. As an example, it's open to anyone to use. 
-        // To get the "message" itself we join the `args` back into a string with spaces: 
+        // makes the bot say something and delete the message. As an example, it's open to anyone to use.
+        // To get the "message" itself we join the `args` back into a string with spaces:
         const sayMessage = args.join(" ");
         // Then we delete the command message (sneaky, right?). The catch just ignores the error with a cute smiley thing.
         message.delete().catch(O_o => { });
-        // And we get the bot to say the thing: 
+        // And we get the bot to say the thing:
         message.channel.send(sayMessage);
     }
 
     if (command === "kick") {
         // This command must be limited to mods and admins. In this example we just hardcode the role names.
-        // Please read on Array.some() to understand this bit: 
+        // Please read on Array.some() to understand this bit:
         // https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Array/some?
         if (!message.member.roles.some(r => ["Administrator", "Moderator"].includes(r.name)))
             return message.reply("Sorry, you don't have permissions to use this!");
@@ -160,8 +164,8 @@ client.on("message", async message => {
     }
 
     if (command === "stat") {
-        // makes the bot say something and delete the message. As an example, it's open to anyone to use. 
-        // To get the "message" itself we join the `args` back into a string with spaces: 
+        // makes the bot say something and delete the message. As an example, it's open to anyone to use.
+        // To get the "message" itself we join the `args` back into a string with spaces:
         const uStat = args[0];
         const mode = args[1];
         const uMode = await getMode(mode);
@@ -171,7 +175,7 @@ client.on("message", async message => {
         }
         // Then we delete the command message (sneaky, right?). The catch just ignores the error with a cute smiley thing.
         // message.delete().catch(O_o => { });
-        // And we get the bot to say the thing: 
+        // And we get the bot to say the thing:
         let m = message.channel.send({
             embed: {
                 color: 3441103,
@@ -229,8 +233,8 @@ client.on("message", async message => {
     }
 
     if (command === "best") {
-        // makes the bot say something and delete the message. As an example, it's open to anyone to use. 
-        // To get the "message" itself we join the `args` back into a string with spaces: 
+        // makes the bot say something and delete the message. As an example, it's open to anyone to use.
+        // To get the "message" itself we join the `args` back into a string with spaces:
         const uRecent = args[0];
         const mode = args[1];
         const uMode = await getMode(mode);
@@ -240,7 +244,7 @@ client.on("message", async message => {
         }
         // Then we delete the command message (sneaky, right?). The catch just ignores the error with a cute smiley thing.
         // message.delete().catch(O_o => { });
-        // And we get the bot to say the thing: 
+        // And we get the bot to say the thing:
         let m = message.channel.send({
             embed: {
                 color: 3441103,
@@ -291,8 +295,8 @@ client.on("message", async message => {
     }
 
     if (command === "recent") {
-        // makes the bot say something and delete the message. As an example, it's open to anyone to use. 
-        // To get the "message" itself we join the `args` back into a string with spaces: 
+        // makes the bot say something and delete the message. As an example, it's open to anyone to use.
+        // To get the "message" itself we join the `args` back into a string with spaces:
         const uRecent = args[0];
         const mode = args[1];
         const uMode = await getMode(mode);
@@ -302,7 +306,7 @@ client.on("message", async message => {
         }
         // Then we delete the command message (sneaky, right?). The catch just ignores the error with a cute smiley thing.
         // message.delete().catch(O_o => { });
-        // And we get the bot to say the thing: 
+        // And we get the bot to say the thing:
         let m = message.channel.send({
             embed: {
                 color: 3441103,
@@ -353,8 +357,8 @@ client.on("message", async message => {
     }
 
     if (command === "shipinfo") {
-        // makes the bot say something and delete the message. As an example, it's open to anyone to use. 
-        // To get the "message" itself we join the `args` back into a string with spaces: 
+        // makes the bot say something and delete the message. As an example, it's open to anyone to use.
+        // To get the "message" itself we join the `args` back into a string with spaces:
         let type = args[0];
         let name = args.slice(1).join(' ');
         let pic;
@@ -364,7 +368,7 @@ client.on("message", async message => {
 
         // Then we delete the command message (sneaky, right?). The catch just ignores the error with a cute smiley thing.
         // message.delete().catch(O_o => { });
-        // And we get the bot to say the thing: 
+        // And we get the bot to say the thing:
         wg.searchByName(name, type).then((result) => {
             let obj;
             // console.log(Object.keys(result));
@@ -431,8 +435,8 @@ client.on("message", async message => {
     }
 
     if (command === "xxxxxxuserpvp") {
-        // makes the bot say something and delete the message. As an example, it's open to anyone to use. 
-        // To get the "message" itself we join the `args` back into a string with spaces: 
+        // makes the bot say something and delete the message. As an example, it's open to anyone to use.
+        // To get the "message" itself we join the `args` back into a string with spaces:
         let username = args[0];
         let type = args[1];
         let name = args.slice(2).join(' ');
@@ -443,7 +447,7 @@ client.on("message", async message => {
 
         // Then we delete the command message (sneaky, right?). The catch just ignores the error with a cute smiley thing.
         // message.delete().catch(O_o => { });
-        // And we get the bot to say the thing: 
+        // And we get the bot to say the thing:
         wg.pvpStatics(name, type, username).then((result) => {
             let obj = result;
             // console.log(obj)
@@ -490,8 +494,8 @@ client.on("message", async message => {
     }
 
     if (command === "shipstats") {
-        // makes the bot say something and delete the message. As an example, it's open to anyone to use. 
-        // To get the "message" itself we join the `args` back into a string with spaces: 
+        // makes the bot say something and delete the message. As an example, it's open to anyone to use.
+        // To get the "message" itself we join the `args` back into a string with spaces:
         let type = args[0];
         let name = args.slice(1).join(' ');
         let m = message.channel.send({
@@ -520,8 +524,8 @@ client.on("message", async message => {
     }
 
     if (command === "card") {
-        // makes the bot say something and delete the message. As an example, it's open to anyone to use. 
-        // To get the "message" itself we join the `args` back into a string with spaces: 
+        // makes the bot say something and delete the message. As an example, it's open to anyone to use.
+        // To get the "message" itself we join the `args` back into a string with spaces:
         let evolved = false;
         let type;
         let name;
