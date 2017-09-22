@@ -9,11 +9,8 @@
   "author": "plzpeacez",
   "license": "ISC",
   "dependencies": {
-    "bufferutil": "^3.0.2",
     "discord.js": "^11.2.1",
-    "libsodium-wrappers": "^0.5.4",
-    "opusscript": "0.0.3",
     "osu": "^1.1.2",
-    "uws": "^8.14.1"
+    "request": "^2.82.0"
   }
 }
