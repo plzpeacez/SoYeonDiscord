@@ -9,7 +9,11 @@
   "author": "plzpeacez",
   "license": "ISC",
   "dependencies": {
-    "discord.js": "^11.1.0",
-    "osu": "^1.1.2"
+    "bufferutil": "^3.0.2",
+    "discord.js": "^11.2.1",
+    "libsodium-wrappers": "^0.5.4",
+    "opusscript": "0.0.3",
+    "osu": "^1.1.2",
+    "uws": "^8.14.1"
   }
 }
