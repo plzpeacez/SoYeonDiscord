@@ -23,6 +23,12 @@ const ship = require("./ship");
 // Load shadowverse embed
 const sdv = require("./shadowverse");
 
+//YTDL-CORE
+const YTDL = require("ytdl-core");
+
+// play musics
+const servers = {};
+
 // variables in use
 // var beatmaps = null;
 var refreshIntervalId;
@@ -83,6 +89,72 @@ client.on("message", async message => {
 
     if (command === "help") {
         message.channel.send("Go to \nhttp://rchelincle.me/soyeon \nfor check out all commands");
+    }
+
+    if (command === "play") {
+        if (!args[0]) {
+            message.channel.sendMessage("ใส่ link เพลงด้วยจ้า ~")
+            return
+        }
+
+        if (!message.member.voiceChannel) {
+            message.channel.sendMessage("คุณไม่ได้อยู่ใน voice channel จ้า ~")
+            return
+        }
+
+        if (!servers[message.guild.id]) {
+            servers[message.guild.id] = {
+                queue: []
+            }
+        }
+
+        const server = servers[message.guild.id];
+
+        server.queue.push(args[0]);
+
+        if (!message.guild.voiceConnection) {
+            message.member.voiceChannel.join().then(function (connection) {
+                play(connection, message);
+            })
+        }
+    }
+
+    if (command === "skip") {
+        const server = servers[message.guild.id];
+
+        message.channel.send('Skipped to next song.', { code: true });
+        if (server.dispatcher) server.dispatcher.end();
+    }
+
+    if (command === "stop") {
+        const server = servers[message.guild.id];
+
+        server.queue = [];
+
+        message.channel.send('Stop playing and leave the Voice Channel.', { code: true });
+        if (message.guild.voiceConnection) message.guild.voiceConnection.disconnect();
+        return;
+    }
+
+    if (command === "queue") {
+        const server = servers[message.guild.id];
+
+        if (!servers[message.guild.id]) {
+            message.channel.send("ยังไม่มีเพลงต่อไปในรายการ", { code: true })
+            return;
+        }
+
+        if (server.queue.length == 0) {
+            message.channel.send("ยังไม่มีเพลงต่อไปในรายการ", { code: true })
+            return;
+        }
+
+        for (var i = 0; i < server.queue.length; i++) {
+            // console.log(server.queue[i])
+            let song = await ytdlgetInfo(server.queue[i]);
+            message.channel.send('Next: ' + song, { code: true });
+        }
+        console.log(server.queue.length)
     }
 
     if (command === "say") {
@@ -567,6 +639,13 @@ client.on("message", async message => {
             })
         }
     }
+
+    if (command === "dm") {
+        let dmCh = args[0];
+        let word = args.slice(1).join(' ');
+        let ch = client.channels.get(dmCh);
+        ch.sendMessage(word)
+    }
 });
 
 // Create an event listener for new guild members
@@ -606,8 +685,10 @@ client.on("message", async message => {
     const args = message.content.slice(config.keyword.length).trim().split(/ +/g);
     const command = args.shift().toLowerCase();
     if (message.channel.type === "dm") {
-        message.author.send("ต้องขอโทษด้วยครับเนื่องจากบอท ไม่สามารถตอบคำถามอะไรได้มากในตอนนี้ \nหากมีคำถามหรือข้อสงสัย Add มาที่discord SoYeon#8163 ได้เลยครับ \nขออภัยในความไม่สะดวก");
+        // message.author.send("ต้องขอโทษด้วยครับเนื่องจากบอท ไม่สามารถตอบคำถามอะไรได้มากในตอนนี้ \nหากมีคำถามหรือข้อสงสัย Add มาที่discord SoYeon#8163 ได้เลยครับ \nขออภัยในความไม่สะดวก");
         // console.log(message.content);
+        var ch = client.channels.get('355605045745680384');
+        ch.sendMessage('('+message.author.dmChannel.id+')'+message.author+": "+message.content);
         if (command === "sig") {
             const sigMessage = args.join(" ");
             // message.author.send("Your message here." + message.content);
@@ -676,4 +757,38 @@ function statDisplay(num) {
     }
     // console.log(dis)
     return dis;
+}
+
+function play(connection, message) {
+    const server = servers[message.guild.id];
+
+    server.dispatcher = connection.playStream(YTDL(server.queue[0], { filter: "audioonly" }));
+
+    YTDL.getInfo(server.queue[0], function (err, info) {
+        // console.log(info)
+        // message.channel.send('Now playing: '+info.title+' โดยคุณ '+message.author.username, {code:true});
+        const embed = new Discord.RichEmbed()
+            .setColor(3441103)
+            .addField("Now Playing", "[" + info.title + "](" + info.video_url + ")", false)
+            .setFooter("Requested @ " + message.author.username, message.author.avatarURL)
+            .setThumbnail(info.iurlmaxres)
+        message.channel.send({ embed });
+    });
+
+    server.queue.shift();
+
+    server.dispatcher.on("end", function () {
+        if (server.queue[0]) play(connection, message);
+        else connection.disconnect();
+    })
+}
+
+function ytdlgetInfo(url) {
+    return new Promise((resolve, reject) => {
+        YTDL.getInfo(url, function (err, info) {
+            if (!err) {
+                resolve(info.title)
+            }
+        })
+    })
 }

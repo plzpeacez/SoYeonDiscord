@@ -20,6 +20,9 @@ const wg = require("../wg/wgapi");
 // Load Ships embed
 const ship = require("./ship");
 
+// Load shadowverse embed
+const sdv = require("../phantasma/shadowverse");
+
 // variables in use
 // var beatmaps = null;
 var refreshIntervalId;
@@ -32,7 +35,7 @@ client.on("ready", () => {
     // Example of changing the bot's playing game to something useful. `client.user` is what the
     // docs refer to as the "ClientUser".
     //   client.user.setGame(`on ${client.guilds.size} servers`);
-    client.user.setPresence({ game: { name: 'SoYeon serving on ' + client.guilds.size + ' servers with ' + client.users.size + ' members! thanks for trusting.', type: 0 } });
+    client.user.setPresence({ game: { name: 'Is fighting and despair all you know?', type: 0 } });
     // client.user.setGame('+Command is the one that betrayed you!', 'https://www.twitch.tv/osulive');
 });
 
@@ -40,14 +43,16 @@ client.on("guildCreate", guild => {
     // This event triggers when the bot joins a guild.
     console.log(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`);
     //   client.user.setGame(`on ${client.guilds.size} servers`);
-    client.user.setGame('Command is the one that betrayed you!');
+    // client.user.setGame('Command is the one that betrayed you!');
+    client.user.setPresence({ game: { name: 'SoYeon serving on ' + client.guilds.size + ' servers with ' + client.users.size + ' members! thanks for trusting.', type: 0 } });
 });
 
 client.on("guildDelete", guild => {
     // this event triggers when the bot is removed from a guild.
     console.log(`I have been removed from: ${guild.name} (id: ${guild.id})`);
     //   client.user.setGame(`on ${client.guilds.size} servers`);
-    client.user.setGame('Command is the one that betrayed you!');
+    // client.user.setGame('Command is the one that betrayed you!');
+    client.user.setPresence({ game: { name: 'SoYeon serving on ' + client.guilds.size + ' servers with ' + client.users.size + ' members! thanks for trusting.', type: 0 } });
 });
 
 
@@ -516,6 +521,62 @@ client.on("message", async message => {
             // message.channel.send("ประเภทเรือหรือชื่อเรือ ไม่ตรงกับคำค้นหา ลองใหม่จ้า~ \nตัวอย่างนะ  +shipstats bb ARP Kongō\n(สำหรับบางลำมันเช็ค top modules ไม่ได้ สาเหตุมาจาก API ครับ เช่น Iowa งี้ กำลังหาทางแก้อยู่");
         }
     }
+
+    if (command === "card") {
+        // makes the bot say something and delete the message. As an example, it's open to anyone to use. 
+        // To get the "message" itself we join the `args` back into a string with spaces: 
+        let evolved = false;
+        let type;
+        let name;
+        if (args[0] === "evolv") {
+            type = args[1];
+            name = args.slice(2).join(' ');
+            evolved = true;
+        } else {
+            type = args[0];
+            name = args.slice(1).join(' ');
+        }
+        let m = message.channel.send({
+            embed: {
+                color: 3441103,
+                description: "Searching...!"
+            }
+        });
+        try {
+            const emb = await sdv.getEmbed(name, type, evolved);
+            if (!emb) {
+                m.then((m) => {
+                    m.edit({
+                        embed: {
+                            color: 2441199,
+                            description: "ไม่เจอเลยจ้า ~"
+                        }
+                    });
+                })
+            }
+            // message.channel.send({ embed: emb })
+            m.then((m) => {
+                m.edit({ embed: emb })
+            })
+        } catch (err) {
+            // message.channel.send(emb)
+            m.then((m) => {
+                m.edit({
+                    embed: {
+                        color: 2441199,
+                        description: "ไม่เจอเลยจ้า ~"
+                    }
+                });
+            })
+        }
+    }
+
+    if (command === "dm") {
+        let dmCh = args[0];
+        let word = args.slice(1).join(' ');
+        let ch = client.channels.get(dmCh);
+        ch.sendMessage(word)
+    }
 });
 
 // Create an event listener for new guild members
@@ -555,8 +616,10 @@ client.on("message", async message => {
     const args = message.content.slice(config.keyword.length).trim().split(/ +/g);
     const command = args.shift().toLowerCase();
     if (message.channel.type === "dm") {
-        message.author.send("ต้องขอโทษด้วยครับเนื่องจากบอท ไม่สามารถตอบคำถามอะไรได้มากในตอนนี้ \nหากมีคำถามหรือข้อสงสัย Add มาที่discord SoYeon#8163 ได้เลยครับ \nขออภัยในความไม่สะดวก");
+        // message.author.send("ต้องขอโทษด้วยครับเนื่องจากบอท ไม่สามารถตอบคำถามอะไรได้มากในตอนนี้ \nหากมีคำถามหรือข้อสงสัย Add มาที่discord SoYeon#8163 ได้เลยครับ \nขออภัยในความไม่สะดวก");
         // console.log(message.content);
+        var ch = client.channels.get('355605045745680384');
+        ch.sendMessage('(' + message.author.dmChannel.id + ')' + message.author + ": " + message.content);
         if (command === "sig") {
             const sigMessage = args.join(" ");
             // message.author.send("Your message here." + message.content);

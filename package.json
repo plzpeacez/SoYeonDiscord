@@ -10,6 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "discord.js": "^11.1.0",
-    "osu": "^1.1.2"
+    "opusscript": "0.0.3",
+    "osu": "^1.1.2",
+    "ytdl-core": "^0.17.1"
   }
 }
