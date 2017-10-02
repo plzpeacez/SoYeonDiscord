@@ -61,6 +61,10 @@ client.on("message", async message => {
     // and not get into a spam loop (we call that "botception").
     if (message.author.bot) return;
 
+    if (message.mentions.users.find(val => val.username === 'SoYeon')) {
+        message.channel.send('Me ?');
+    }
+
     // Also good practice to ignore any message that does not start with our prefix,
     // which is set in the configuration file.
     if (message.content.indexOf(config.prefix) !== 0) return;

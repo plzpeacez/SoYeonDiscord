@@ -24,7 +24,7 @@ const ship = require("./ship");
 const sdv = require("./shadowverse");
 
 //YTDL-CORE
-const YTDL = require("ytdl-core");
+// const YTDL = require("ytdl-core");
 
 // play musics
 const servers = {};
@@ -670,6 +670,11 @@ client.on('message', message => {
         // Send "pong" to the same channel
         message.channel.send(message.author.username + ' บอกว่า ' + message.content);
         // message.channel.send('บอกว่า ++');
+    }
+
+    if (message.mentions.users.find(val => val.username === 'SoYeon')) {
+        // console.log(message.mentions.users);
+        message.channel.send('Me ?');
     }
 
     // if (message.content === '555' || /555/.test(message.content)) {
