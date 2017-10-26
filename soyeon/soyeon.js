@@ -29,6 +29,16 @@ var refreshIntervalId;
 var beatmapObj = null;
 // const embed1;
 
+//ans message when someone call SoYeon
+var randomWord = [
+    "Me ?",
+    "⊙﹏⊙",
+    "ヽ( ´ー`)ノ",
+    "o(︶︿︶)o",
+    "（*｀・_ゝ・）",
+    "Hey There!"
+]
+
 client.on("ready", () => {
     // This event will run if the bot starts, and logs in, successfully.
     console.log(`Bot has started, with ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`);
@@ -62,7 +72,8 @@ client.on("message", async message => {
     if (message.author.bot) return;
 
     if (message.mentions.users.find(val => val.username === 'SoYeon')) {
-        message.channel.send('Me ?');
+        // message.channel.send('Me ?');
+        message.channel.send(randomWord[Math.floor(Math.random() * randomWord.length)]);
     }
 
     // Also good practice to ignore any message that does not start with our prefix,

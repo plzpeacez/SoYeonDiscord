@@ -672,9 +672,18 @@ client.on('message', message => {
         // message.channel.send('บอกว่า ++');
     }
 
+    var randomWord = [
+        "Me ?",
+        "⊙﹏⊙",
+        "ヽ( ´ー`)ノ",
+        "o(︶︿︶)o",
+        "（*｀・_ゝ・）",
+        "Hey There!"
+    ]
+
     if (message.mentions.users.find(val => val.username === 'SoYeon')) {
         // console.log(message.mentions.users);
-        message.channel.send('Me ?');
+        message.channel.send(randomWord[Math.floor(Math.random() * randomWord.length)]);
     }
 
     // if (message.content === '555' || /555/.test(message.content)) {
