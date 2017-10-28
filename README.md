@@ -1,5 +1,5 @@
 Bot for Discord
 ============
-__*This is the discord bot that can get stats of user in osu!mania!*__
+__*Command is the one that betrayrd you!*__
 
-The format of the returned objects can be seen in the official [osu!api documentation](https://github.com/peppy/osu-api/wiki)
+Command list here > | [rchelincle.me/soyeon ](https://rchelincle.me/soyeon )
