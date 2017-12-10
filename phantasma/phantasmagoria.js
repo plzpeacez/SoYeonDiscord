@@ -672,6 +672,14 @@ client.on('message', message => {
         // message.channel.send('บอกว่า ++');
     }
 
+    //ack for message ++ in IMPACT
+    var impactCh = client.channels.get('355605045745680384');
+    if (message.channel.id === '355605045745680384') {
+        if (message.content === '++' || /\+\+/.test(message.content)) {
+            impactCh.sendMessage(':joy:');
+        }
+    }
+    
     var randomWord = [
         "Me ?",
         "⊙﹏⊙",

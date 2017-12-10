@@ -76,6 +76,19 @@ client.on("message", async message => {
         message.channel.send(randomWord[Math.floor(Math.random() * randomWord.length)]);
     }
 
+    //ack for message ++ in IMPACT
+    var impactCh = client.channels.get('246305989442142208');
+    if (message.channel.id === '246305989442142208') {
+        if (message.content === '++' || /\+\+/.test(message.content)) {
+            impactCh.sendMessage('<:noo:378951017842343946>');
+        }
+        //<:buakbuak:384154502099369984>
+        if (message.content === 'buakbuak' || /buakbuak/g.test(message.content)) {
+            // console.log(client.emojis.find("name", "buakbuak"));
+            impactCh.sendMessage('<:yess:378951060200357888>');
+         }
+    }
+
     // Also good practice to ignore any message that does not start with our prefix,
     // which is set in the configuration file.
     if (message.content.indexOf(config.prefix) !== 0) return;
