@@ -80,7 +80,7 @@ client.on("message", async message => {
     var impactCh = client.channels.get('246305989442142208');
     if (message.channel.id === '246305989442142208') {
         if (message.content === '++' || /\+\+/.test(message.content)) {
-            impactCh.sendMessage('<:noo:378951017842343946>');
+            // impactCh.sendMessage('<:noo:378951017842343946>');
         }
         //<:buakbuak:384154502099369984>
         if (message.content === 'buakbuak' || /buakbuak/g.test(message.content)) {
